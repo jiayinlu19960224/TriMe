@@ -4,6 +4,7 @@ TriMe++: a multi-threaded software library for 2D geometry meshing using the Del
 By Jiayin Lu (1,2), Chris H. Rycroft (2)
 
 (1) Harvard University
+
 (2) University of Wisconsin-Madison
 
 Overview
