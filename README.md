@@ -1,6 +1,7 @@
 # TriMe
 
 TriMe++: a multi-threaded software library for 2D geometry meshing using the Delaunay triangulation. 
+
 By Jiayin Lu (1,2), Chris H. Rycroft (2)
 
 (1) Harvard University
