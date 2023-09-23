@@ -1,4 +1,5 @@
 # TriMe
+
 TriMe++: a multi-threaded software library for 2D geometry meshing using the Delaunay triangulation. 
 By Jiayin Lu (1,2), Chris H. Rycroft (2)
 
@@ -75,6 +76,7 @@ We use the multi-threaded version of Voro++ in the meshing algorithms.
 Contents
 ========
 examples - examples making use of the library
+
 src - source code files
 
 
