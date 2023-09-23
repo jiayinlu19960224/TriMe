@@ -90,7 +90,7 @@ useful, please email me at jiayinlu19960224work@gmail.com. Also, if you plan to 
 academic paper using this software, please consider citing the following
 publications:
 
-- TriMe++: Multi-threaded geometry meshing using the Delaunay Triangulation
+- Lu, Jiayin, Rycroft, Chris. (2023). TriMe++: Multi-threaded geometry meshing using the Delaunay Triangulation
 
 We detail in the reference paper the methods, designs and structure of the meshing pipeline
 and algorithms. We also describe the implementation of multi-threaded parallelizaiton throughout 
