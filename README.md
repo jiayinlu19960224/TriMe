@@ -42,9 +42,9 @@ using a grid-based data structure to represent the shape. The sizing_2d class su
 adaptive element sizing and density fields for the mesh. It utilizes an adaptive quad-tree data structure, 
 enabling efficient refinement of sizing and density values in areas with complex geometries. 
 In the meshing procedure, the parallel_meshing_2d class iteratively improves point positions in the mesh. 
-In each meshing iteration, we employ the multi-threaded \textsc{Voro++} to facilitate parallel computation 
+In each meshing iteration, we employ the multi-threaded Voro++ to facilitate parallel computation 
 in generating the Delaunay triangulation of the points. Users have the option to select from three meshing 
-algorithms, the DistMesh algorithm in the mesh_alg_2d_dm} class, the Centroidal Voronoi Diagram meshing 
+algorithms, the DistMesh algorithm in the mesh_alg_2d_dm class, the Centroidal Voronoi Diagram meshing 
 algorithm in the mesh_alg_2d_cvd class, and a hybrid method of the two in the mesh_alg_2d_hybrid class. 
 Throughout this meshing workflow, we utilize OpenMP for multi-threaded parallel computations.
 
@@ -54,14 +54,13 @@ Throughout this meshing workflow, we utilize OpenMP for multi-threaded parallel 
 Compilation - Linux / Mac OS / Windows with Cygwin
 ==================================================
 The code is written in ANSI C++, and compiles on many system architectures. The
-package contains the C++ source code, example files, miscellaneous utilities
-and documentation. On Linux, Mac OS, and Windows (using Cygwin), the
-compilation and installed can be carried out using GNU Make.
+package contains the C++ source code and example files. On Linux, Mac OS, and 
+Windows (using Cygwin), the compilation and installed can be carried out using GNU Make.
 
 To begin, the user should review the file "config.mk" in the top level
 directory, to make sure that the compilation and installation settings are
 appropriate for their system. Typing "make" will then compile the static
-library, command-line utility, and examples.
+library and examples.
 
 
 Related programs
