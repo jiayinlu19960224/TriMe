@@ -90,7 +90,7 @@ useful, please email me at jiayinlu19960224work@gmail.com. Also, if you plan to 
 academic paper using this software, please consider citing the following
 publications:
 
-- Lu, Jiayin, Rycroft, Chris. (2023). TriMe++: TriMe++: Multi-threaded triangular meshing in two dimensions
+- Lu, Jiayin, Rycroft, Chris. (2023). TriMe++: Multi-threaded triangular meshing in two dimensions
 
 
 **Abstract of paper**
