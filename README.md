@@ -8,6 +8,9 @@ By Jiayin Lu (1,2), Chris H. Rycroft (2)
 
 (2) University of Wisconsin-Madison
 
+I am very interested to hear from users of the software, so if you find this
+useful or have any questions, please email me at jiayinlu19960224work@gmail.com.
+
 Overview
 ========================================================================
 TriMe++ is a multi-threaded software library designed for generating adaptive 2D meshes for intricate 
@@ -85,9 +88,7 @@ Usage
 =====
 TriMe++ is released as a free software.
 
-I am very interested to hear from users of the software, so if you find this
-useful, please email me at jiayinlu19960224work@gmail.com. Also, if you plan to publish an
-academic paper using this software, please consider citing the following
+If you plan to publish an academic paper using this software, please consider citing the following
 publications:
 
 - Lu, Jiayin, Rycroft, Chris. (2023). TriMe++: Multi-threaded triangular meshing in two dimensions
