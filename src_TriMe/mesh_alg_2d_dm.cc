@@ -133,39 +133,6 @@ void mesh_alg_2d_dm::applyBarForce(){
         xy_id_new[i2+1]=pm2d->xy_id[i2+1];
     }
 
-/* NOT WORKING
-    //calculate force vectors (x, y components)
-    //update xy_id_new
-   #pragma omp single
-   {
-    for(int i=0;i<bar_ct;i++){
-        int i4=4*i;
-        int i2=2*i;
-        double LL = barinfo[i4+3]*force_fac;
-        if(LL-barinfo[i4+2]>0.0){
-            int id2 = barid[i2+1];
-            int id1 = barid[i2];
-            int id22=2*id2;
-            int id12=2*id1;
-
-            double F= deltat*(LL/barinfo[i4+2]-1.0);
-            double ffx = F*barinfo[i4];   //Ftot_x
-            double ffy = F*barinfo[i4+1]; //Ftot_y
-
-            #pragma omp task firstprivate(id22,id12,ffx,ffy) depend(inout:xy_id_new_[id22],xy_id_new_[id22+1],xy_id_new_[id12],xy_id_new_[id12+1])
-            {
-                xy_id_new_[id22]+=ffx;   
-                xy_id_new_[id22+1]+=ffy;
-                xy_id_new_[id12]+=(-ffx);
-                xy_id_new_[id12+1]+=(-ffy);
-            }
-        }
-
-    }
-
-   }
-*/
-
     //calculate force vectors (x, y components)
     //update xy_id_new
     #pragma omp for
@@ -277,7 +244,7 @@ double t2=omp_get_wtime();
         //and get final pt positions, store in xy_id
         //also, if Ncurrent==Ntotal, count number of inner pts over stop_Continue movement criteria
         #pragma omp for reduction(+:inner_pt_over_stop_Continue_mvmt_thres_ct, pt_mvmt_btw_tria_large_ct)
-        for(int i=0;i<Ncurrent;i++){
+        for(int i=Nfixed;i<Ncurrent;i++){
             int i2=2*i;
             double px_old=pm2d->xy_id[i2];
             double py_old=pm2d->xy_id[i2+1];

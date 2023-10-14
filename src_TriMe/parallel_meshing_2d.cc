@@ -29,7 +29,7 @@ parallel_meshing_2d::parallel_meshing_2d(container_2d* con_, shape_2d* shp_, siz
 
 	xy_id(new double[1]), pt_ctgr(new int[1]),chrtrt_len_h(new double[1]),
 	bgrid_geps(new double[1]), bgrid_deps(new double[1]),bdry_adf_construction(false),
-	Ntotal(0),Ncurrent(0),Nremain(0),inner_pt_ct(0),
+	Ntotal(0),Ncurrent(0),Nremain(0),Nfixed(0),inner_pt_ct(0),
 
 	output_interval(output_interval_)
 	{
@@ -41,129 +41,6 @@ parallel_meshing_2d::parallel_meshing_2d(container_2d* con_, shape_2d* shp_, siz
  * Cleans up dynamically allocated memory.
  */
 parallel_meshing_2d::~parallel_meshing_2d(){
-
-/*
-//check and print out chrtrt_len_h grid for inner & bdry grids
-//check and print out geps field for bdry grids
-//check and print out deps field for bdry grids
-	char fh[256];
-    sprintf(fh,"%s/h_field.txt",file_name_prefix);
-    FILE *fhout=fopen(fh,"a");
-    
-    char fgeps[256];
-    sprintf(fgeps,"%s/geps_field.txt",file_name_prefix);
-    FILE *fgepsout=fopen(fgeps,"a");
-
-    char fdeps[256];
-    sprintf(fdeps,"%s/deps_field.txt",file_name_prefix);
-    FILE *fdepsout=fopen(fdeps,"a");
-
-    char fadf_err[256];
-    sprintf(fadf_err,"%s/adf_err_field.txt",file_name_prefix);
-    FILE *fadf_errout=fopen(fadf_err,"a");
-
-    char fadf_lev[256];
-    sprintf(fadf_lev,"%s/adf_lev_field.txt",file_name_prefix);
-    FILE *fadf_levout=fopen(fadf_lev,"a");
-
-    char fcell_ct[256];
-    sprintf(fcell_ct,"%s/adf_cell_ct_field.txt",file_name_prefix);
-    FILE *fcell_ctout=fopen(fcell_ct,"a");
-    
-    for(int i=0;i<gnx;i++){
-        for(int j=0;j<gny;j++){
-        	int ij=gnx*j+i;
-        	double hval=0;
-        	double gepsval=0;
-        	double depsval=0;
-        	double adf_err=0;
-        	int adf_lev=0;
-        	int adf_cell_ct=0;
-        	if(geo_grid(ij)>0 && geo_grid(ij)<=gnxy){ //bdry grid
-        		int ind=geo_grid(ij)-1;
-        		hval=chrtrt_len_h[ij];
-        		gepsval=bgrid_geps[ind];
-        		depsval=bgrid_deps[ind];
-        		adf_err=bgrid_adf_stat[ind]->err;
-        		adf_lev=bgrid_adf_stat[ind]->depth;
-        		adf_cell_ct=bgrid_adf_stat[ind]->cell_ct;
-
-        	}
-        	else if(geo_grid(ij)<0){ //inner grid
-				int ind=abs(geo_grid(ij))-1;
-				hval=chrtrt_len_h[ij];
-        	}
-
-            fprintf(fhout,"%g ",hval);
-            fprintf(fgepsout,"%g ",gepsval);
-            fprintf(fdepsout,"%g ",depsval);
-
-            fprintf(fadf_errout,"%g ",adf_err);
-            fprintf(fadf_levout,"%d ",adf_lev);
-            fprintf(fcell_ctout,"%d ",adf_cell_ct);
-
-        }
-        fprintf(fhout,"\n");
-        fprintf(fgepsout,"\n");
-        fprintf(fdepsout,"\n");
-
-        fprintf(fadf_errout,"\n");
-        fprintf(fadf_levout,"\n");
-        fprintf(fcell_ctout,"\n");
-    }
-    fclose(fhout);
-    fclose(fgepsout);
-    fclose(fdepsout);
-
-    fclose(fadf_errout);
-    fclose(fadf_levout);
-    fclose(fcell_ctout);
-*/
-
-/*
-//check and print out adf_bdry and sdf field with a finer grid
-    char fadf_sdf[256];
-    sprintf(fadf_sdf,"%s/adf_sdf_field.txt",file_name_prefix);
-    FILE *fadf_sdfout=fopen(fadf_sdf,"a");
-
-    for(int i=0;i<10*gnx;i++){
-        for(int j=0;j<10*gny;j++){
-        	double grid_mx=ax+(i+0.5)*0.1*gdx; 
-        	double grid_my=ay+(j+0.5)*0.1*gdy; 
-
-        	fprintf(fadf_sdfout,"%g ",sdf_adf(grid_mx,grid_my));
-
-        }
-        fprintf(fadf_sdfout,"\n");
-        
-    }
-    fclose(fadf_sdfout);
-*/
-
-/*
-//check and print out only adf_bdry with a finer grid
-    char fadf[256];
-    sprintf(fadf,"%s/adf_field.txt",file_name_prefix);
-    FILE *fadfout=fopen(fadf,"a");
-
-    for(int i=0;i<10*gnx;i++){
-        for(int j=0;j<10*gny;j++){
-        	double grid_mx=ax+(i+0.5)*0.1*gdx; 
-        	double grid_my=ay+(j+0.5)*0.1*gdy; 
-        	int ind=shp->pt_geo_grid_val(grid_mx,grid_my)-1;
-        	if(ind>=0 && ind<gnxy){ //bdry grid
-        		fprintf(fadfout,"%g ",geo_bgrid_adf(grid_mx,grid_my));
-        	}
-        	else{
-        		fprintf(fadfout,"%g ",0.0);
-        	}
-
-        }
-        fprintf(fadfout,"\n");
-        
-    }
-    fclose(fadfout);
-*/
 
 	delete [] xy_id;
 	delete [] pt_ctgr;
@@ -182,6 +59,7 @@ parallel_meshing_2d::~parallel_meshing_2d(){
 	}
 	
 }
+
 
 /**
  * Returns the geometry tolerance (geps) associated with the boundary grid that the given coordinates lie in.
@@ -605,8 +483,244 @@ void parallel_meshing_2d::error_diffusion(bool generate_pt, double diff,
 
 
 
+/** 
+ * Add fixed points into the mesh. Rescale the points using the same scaling as the scaling of shp.
+ * 
+ * @param Nfixed The number of fixed points
+ * @param shp A custom_shape_2d model, whose scaling parameters we will use for normalizing the fixed points
+ * @param fixed_pt_list the x and y coordinations of the fixed points
+ */
+void parallel_meshing_2d::add_fixed_points_normailze(int Nfixed_, shape_2d* shp_, double* fixed_pt_list){
+	Nfixed=Nfixed_;
+	xy_id_fixed_pt_init=new double[2*Nfixed];
+	#pragma omp parallel for num_threads(num_t)
+    for(int i=0;i<Nfixed;i++){
+    	int i2=2*i;
+    	double ptx=fixed_pt_list[i2];
+    	double pty=fixed_pt_list[i2+1];
+
+    	if(shp_->shape_scaling==true){
+			//scale and center x component of point
+            ptx=shp_->scale_min_domain_range*normalize_model_length_fac*(ptx-shp_->scale_xmid)/shp_->scale_max_range+0.5*lx;
+            //scale and center y component of point
+            pty=shp_->scale_min_domain_range*normalize_model_length_fac*(pty-shp_->scale_ymid)/shp_->scale_max_range+0.5*ly;
+		}
+
+    	xy_id_fixed_pt_init[i2]=ptx;
+    	xy_id_fixed_pt_init[i2+1]=pty;
+    }
+}
+/** 
+ * Add fixed points into the mesh.
+ * 
+ * @param Nfixed The number of fixed points
+ * @param fixed_pt_list the x and y coordinations of the fixed points
+ */
+void parallel_meshing_2d::add_fixed_points(int Nfixed_, double* fixed_pt_list){
+	Nfixed=Nfixed_;
+	xy_id_fixed_pt_init=new double[2*Nfixed];
+	#pragma omp parallel for num_threads(num_t)
+    for(int i=0;i<Nfixed;i++){
+    	int i2=2*i;
+    	xy_id_fixed_pt_init[i2]=fixed_pt_list[i2];
+    	xy_id_fixed_pt_init[i2+1]=fixed_pt_list[i2+1];
+    }
+}
+
+
+
 /**
- * @brief Initialize the points in the container.
+ * Adding fixed points to the mesh. Used in pt_init() function.
+ */
+void parallel_meshing_2d::add_fixed_points_procedure(){
+	if(Nfixed>0){
+		//print fixed points
+		char bug0[256];
+	     sprintf(bug0,"%s/fixed_pt_coords.par",file_name_prefix);
+	     FILE *outFile0 = fopen(bug0, "a");
+	     for(int i=0;i<Nfixed;i++){
+	        fprintf(outFile0,"%g %g \n",xy_id_fixed_pt_init[2*i], xy_id_fixed_pt_init[2*i+1]);
+	     }
+	     fclose(outFile0);
+
+		printf("start adding %d fixed pt \n",Nfixed);
+	//---------------------------------------------------------------------
+		//the first Nfixed points are fixed points
+	    #pragma omp parallel for num_threads(num_t) schedule(guided) 
+	    for(int i=0;i<Nfixed;i++){
+	    	int i2=2*i;
+	    	xy_id[i2]=xy_id_fixed_pt_init[i2];
+	    	xy_id[i2+1]=xy_id_fixed_pt_init[i2+1];
+	    }
+
+		Nremain-=Nfixed;
+		int Ncurrent_old=Ncurrent;
+		Ncurrent+=Nfixed;
+
+	//---------------------------------------------------------------------
+	    //update adaptive geometric arrays
+	    double adaptive_scale_fac=1.0/(sqrt(1.0*(Ncurrent/Ncurrent_old)));
+	    chrtrt_len_h_avg*=adaptive_scale_fac;
+		#pragma omp parallel num_threads(num_t)
+		{
+			#pragma omp for
+			for(int gi=0;gi<geo_bgrid_ct;gi++){
+				int ij=geo_bgrid_ij(gi);
+				chrtrt_len_h[ij]*=adaptive_scale_fac;
+				bgrid_geps[gi]*=adaptive_scale_fac;
+				bgrid_deps[gi]*=adaptive_scale_fac;
+			}
+			#pragma omp for
+			for(int gi=0;gi<geo_igrid_ct;gi++){
+				int ij=geo_igrid_ij(gi);
+				chrtrt_len_h[ij]*=adaptive_scale_fac;
+			}
+		}
+
+		printf("Ncurrrent is now %d \n", Ncurrent);
+	//---------------------------------------------------------------------
+	    //loop through points against new geps, 
+	    //re-ctgr them to pt_ctgr
+	    //and project any outside points back to the new geps
+	    int inner_pt_ct_temp=0;   
+	    #pragma omp parallel for num_threads(num_t) schedule(dynamic) reduction(+: inner_pt_ct_temp)
+		for(int i=0;i<Ncurrent;i++){
+			int i2=2*i;
+			double x=xy_id[i2];
+			double y=xy_id[i2+1];
+			int g_ind0=geo_grid(x,y);
+	    	if(g_ind0<0){ //inner grid
+	    		pt_ctgr[i]=-1; //-1: inner pt
+	    		inner_pt_ct_temp+=1;
+	    	}
+	    	else if(g_ind0>0 && g_ind0<=gnxy){  //bdry grid
+	    		double pt_adf=geo_bgrid_adf(x,y);
+	    		double pt_bgrid_geps=get_bgrid_geps(x,y);
+	    		if(abs(pt_adf)<=pt_bgrid_geps){ //bdry pt
+	    			pt_ctgr[i]=1;
+	    		}
+	    		else if(pt_adf<-pt_bgrid_geps){
+					pt_ctgr[i]=-1; //-1: inner pt
+	    			inner_pt_ct_temp+=1;
+				}
+				else{ //pt_adf>pt_bgrid_geps: outside of geometry with new geps
+					if(i<Nfixed){
+						printf("ERROR: Pt init procedure: fixed pt (%g %g) in geo bdry grid but not in/on geometry.\n",x,y);
+				    	throw std::exception();
+					}
+
+					double new_x, new_y;
+					if(pt_projection(new_x,new_y,x,y,-1,-1)==true){ //(new_x,new_y) on geo bdry/inner grid now
+						xy_id[i2]=new_x;
+						xy_id[i2+1]=new_y;
+
+						//decide if new pt is bdry pt or inner pt
+				    	int g_ind=geo_grid(new_x,new_y);
+				    	if(g_ind>0 && g_ind<=gnxy){ //bdry grid
+				    		double new_xy_adf=geo_bgrid_adf(new_x,new_y);
+				    		double new_xy_bgrid_geps=get_bgrid_geps(new_x,new_y);
+				    		if(abs(new_xy_adf)<=new_xy_bgrid_geps){ //bdry pt
+				    			pt_ctgr[i]=1;
+				    		}
+				    		else if(new_xy_adf<-new_xy_bgrid_geps){
+				    			pt_ctgr[i]=-1; //-1: inner pt
+				    			inner_pt_ct_temp+=1;
+				    		}
+				    		else{
+				    			printf("ERROR: add_fixed_pt: projected bdry pt now (%g %g) in geo bdry grid but not in/on geometry.\n",new_x,new_y);
+				    			throw std::exception();
+				    		}
+				    	}
+				    	else if(g_ind<0){ //inner grid
+				    		pt_ctgr[i]=-1; //-1: inner pt
+				    		inner_pt_ct_temp+=1;
+				    	}
+				    	else{
+				    		printf("ERROR: add_fixed_pt: projected bdry pt now (%g %g) not in geometry inner/bdry grid.\n",new_x,new_y);
+				    		throw std::exception();
+				    	}
+
+					}
+					else{ //fail to project pt onto bdry: this should happen very scarsely!
+						//loop outwards of grids, and if find a inner grid, put pt on its midpt instead
+						//and tag pt inner pt
+						printf("bdry pt with new geps projection fail: this should be very rare! \n");
+						int incre=0;
+						int pgridi=(x-ax)*inv_gdx;
+	                	int pgridj=(y-ay)*inv_gdy;
+	                	int pgridij=gnx*pgridj+pgridi;
+	                	bool continue_search=true;
+
+	                	std::vector<int> inner_grid_found;
+            	        int inner_grid_found_ct=0;
+	                	
+	                	while(continue_search){
+	                		int il=pgridi-incre;int ih=pgridi+incre;
+	                		int jl=pgridj-incre;int jh=pgridj+incre;
+	                		if(il<0&&ih>=gnx&&jl<0&&jh>=gny){
+	                			printf("ERROR: searching inner grid but out of bound, shouldn't happen.\n");
+	    						throw std::exception();
+	                		}
+	                		for(int gridi=il;gridi<=ih;gridi++){
+	                			for(int gridj=jl;gridj<=jh;gridj++){
+	                				//only search the new layer
+	                				if(gridi==il||gridi==ih||gridj==jl||gridj==jh){
+	                					//only search if grid is valid
+	                					if(gridi>=0&&gridi<gnx&&gridj>=0&&gridj<gny){
+	                						int gridij=gnx*gridj+gridi;
+	                						if(geo_grid(gridij)<0){ //inner grid
+	                							continue_search=false;
+	                							inner_grid_found.push_back(gridi);
+		            							inner_grid_found.push_back(gridj);
+		            							inner_grid_found_ct++;
+	                						}
+	                					}
+	                				}
+	                			}
+	                		}
+	                		incre++;
+	                	}
+
+	                	unsigned int seed_i=omp_get_thread_num()+100;
+	                	//Select a random inner grid in the outer layer found
+		            	int random_igrid_found_i2=2* (rand_r(&seed_i) % inner_grid_found_ct); //random int from 0 to inner_grid_found_ct-1
+		            	int gridi=inner_grid_found[random_igrid_found_i2];
+		            	int gridj=inner_grid_found[random_igrid_found_i2+1];
+		            	double random_point_x=ax+(rnd_r(&seed_i)+gridi)*gdx; 
+		            	double random_point_y=ay+(rnd_r(&seed_i)+gridj)*gdy;
+						xy_id[i2]=random_point_x;
+						xy_id[i2+1]=random_point_y;
+						pt_ctgr[i]=-1; //tag inner pt
+	                	inner_pt_ct_temp+=1;
+					}
+				}
+			}
+			else{
+				if(i<Nfixed){
+					printf("ERROR: Pt init procedure: Fixed pt (%g %g) not in inner nor geo bdry grid.\n",x,y);
+	    			throw std::exception();
+				}
+				else{
+					printf("ERROR: Initialized pt %d (%g %g) not in inner nor geo bdry grid.\n",i,x,y);
+	    			throw std::exception();
+				}
+	    	}
+			
+		}
+		inner_pt_ct=inner_pt_ct_temp;
+
+		delete [] xy_id_fixed_pt_init;
+
+		printf("finished adding fixed points \n");
+		//---------------------------------------------------------------------
+	}
+
+}
+
+
+
+/**
+ * @brief Initialize the points in the container. It first initialize int(pt_init_frac*Ntotal) points. It then adds the inputted Nfixed fixed points into the mesh.
  * 
  * It initializes various variables and arrays used in the point initialization process.
  * It calculates the normalized density arrays and characteristic length arrays for inner and boundary grids.
@@ -619,13 +733,15 @@ void parallel_meshing_2d::error_diffusion(bool generate_pt, double diff,
  * It cleans up temporary arrays and releases memory.
  *
  * @param Ntotal_ Total number of points to generate. The function initializes Ncurrent = int(pt_init_frac * Ntotal) points to start with in the container.
+ *  			  It then adds the inputted Nfixed fixed points into the mesh.
  */
 void parallel_meshing_2d::pt_init(int Ntotal_){
 
 	//-------------A. Init general set up--------------//
 
 	Ntotal=Ntotal_;
-	Ncurrent=int(pt_init_frac*Ntotal); inner_pt_ct=0;
+	Ncurrent=min(int(pt_init_frac*Ntotal),Ntotal-Nfixed);
+	inner_pt_ct=0;
 	Nremain=Ntotal-Ncurrent;
 	int pt_counter=0; //after the end of the loop, this is the number of points generated for inner grids.
 	//bdry ADF cells should have error tolerance based on geps of Ntotal, 
@@ -743,25 +859,6 @@ void parallel_meshing_2d::pt_init(int Ntotal_){
         }
     }
 
-
-/*
-
- char fgnpt[256];
-sprintf(fgnpt,"%s/grid_npt_field.txt",file_name_prefix);
-FILE *fgnptout=fopen(fgnpt,"a");
-
-for(int j=0;j<gny;j++){
-	for(int i=0;i<gnx;i++){
-		int ij=gnx*j+i; 
-    	fprintf(fgnptout,"%d ",grid_Npt[ij]);
-
-    }
-    fprintf(fgnptout,"\n");
-}
-fclose(fgnptout);
-
-*/
-
     //Store initial points generated via error diffusion in temp arrays. 
     //If pt_counter!=Ncurrent, delete/add points of temp arrays. 
     //Then put the final set of initial points into the xy_id and pt_ctgr arrays.
@@ -811,7 +908,7 @@ t_generate_pt_in_grid=omp_get_wtime()-t0;
 	//Generate the rest Ncurrent-pt_counter points in the domain's inner/ingeo_bdry grids
 	//Then, we will end up with exactly Ncurrent inner/bdry points
 	int num_more_pt_needed=Ncurrent-pt_counter;
-	printf("pt init generated %d pt",pt_counter);
+	printf("pt init generated %d pt \n",pt_counter);
 	
 	if(num_more_pt_needed<0){ //too many points were generated
 		printf("Ncurrent: %d pt_counter: %d ERROR: pt init too many! Now delete excess points\n",Ncurrent,pt_counter);
@@ -909,13 +1006,20 @@ t_generate_pt_in_grid=omp_get_wtime()-t0;
 		}
 	 }
 
-	//exactly Ncurrent points were generated and is now being put into container
+	//exactly Ncurrent points were generated and is now being put into container; shifted rightwards of Nfixed space
 	#pragma omp parallel for num_threads(num_t)
 	for(int pi=0;pi<Ncurrent;pi++){
-		xy_id[2*pi]=xy_id_temp[2*pi];
-		xy_id[2*pi+1]=xy_id_temp[2*pi+1];
-		pt_ctgr[pi]=pt_ctgr_temp[pi];
+		int pii=Nfixed+pi;
+		xy_id[2*pii]=xy_id_temp[2*pi];
+		xy_id[2*pii+1]=xy_id_temp[2*pi+1];
+		pt_ctgr[pii]=pt_ctgr_temp[pi];
 	}
+
+	//Add Nfixed fixed points into the intial points, updating xy_id and pt_ctgr. 
+	//The first Nfixed spaces in xy_id and pt_ctgr are the fixed points.
+	//This also updates Ncurrent and Nremain,
+	//And updates chrtrt_len_h[ij], bgrid_geps[gi], bgrid_deps[gi].
+	add_fixed_points_procedure();
 
 	con->add_parallel(xy_id, Ncurrent, num_t);
     con->put_reconcile_overflow();
@@ -928,104 +1032,6 @@ t_generate_pt_in_grid=omp_get_wtime()-t0;
 	delete [] Ncurrent_rho_bgrid_ingeo;
 
 /*
-//check and print out chrtrt_len_h grid for inner & bdry grids
-//check and print out geps field for bdry grids
-//check and print out deps field for bdry grids
-	char fh[256];
-    sprintf(fh,"%s/h_field.txt",file_name_prefix);
-    FILE *fhout=fopen(fh,"a");
-    
-    char fgeps[256];
-    sprintf(fgeps,"%s/geps_field.txt",file_name_prefix);
-    FILE *fgepsout=fopen(fgeps,"a");
-
-    char fdeps[256];
-    sprintf(fdeps,"%s/deps_field.txt",file_name_prefix);
-    FILE *fdepsout=fopen(fdeps,"a");
-
-    char fadf_err[256];
-    sprintf(fadf_err,"%s/adf_err_field.txt",file_name_prefix);
-    FILE *fadf_errout=fopen(fadf_err,"a");
-
-    char fadf_lev[256];
-    sprintf(fadf_lev,"%s/adf_lev_field.txt",file_name_prefix);
-    FILE *fadf_levout=fopen(fadf_lev,"a");
-
-    char fcell_ct[256];
-    sprintf(fcell_ct,"%s/adf_cell_ct_field.txt",file_name_prefix);
-    FILE *fcell_ctout=fopen(fcell_ct,"a");
-    
-    for(int i=0;i<gnx;i++){
-        for(int j=0;j<gny;j++){
-        	int ij=gnx*j+i;
-        	double hval=0;
-        	double gepsval=0;
-        	double depsval=0;
-        	double adf_err=0;
-        	int adf_lev=0;
-        	int adf_cell_ct=0;
-        	if(geo_grid(ij)>0 && geo_grid(ij)<=gnxy){ //bdry grid
-        		int ind=geo_grid(ij)-1;
-        		hval=chrtrt_len_h[ij];
-        		gepsval=bgrid_geps[ind];
-        		depsval=bgrid_deps[ind];
-        		adf_err=bgrid_adf_stat[ind]->err;
-        		adf_lev=bgrid_adf_stat[ind]->depth;
-        		adf_cell_ct=bgrid_adf_stat[ind]->cell_ct;
-
-        	}
-        	else if(geo_grid(ij)<0){ //inner grid
-				int ind=abs(geo_grid(ij))-1;
-				hval=chrtrt_len_h[ij];
-        	}
-
-            fprintf(fhout,"%g ",hval);
-            fprintf(fgepsout,"%g ",gepsval);
-            fprintf(fdepsout,"%g ",depsval);
-
-            fprintf(fadf_errout,"%g ",adf_err);
-            fprintf(fadf_levout,"%d ",adf_lev);
-            fprintf(fcell_ctout,"%d ",adf_cell_ct);
-
-        }
-        fprintf(fhout,"\n");
-        fprintf(fgepsout,"\n");
-        fprintf(fdepsout,"\n");
-
-        fprintf(fadf_errout,"\n");
-        fprintf(fadf_levout,"\n");
-        fprintf(fcell_ctout,"\n");
-    }
-    fclose(fhout);
-    fclose(fgepsout);
-    fclose(fdepsout);
-
-    fclose(fadf_errout);
-    fclose(fadf_levout);
-    fclose(fcell_ctout);
-*/
-
-/*
-//check and print out adf_bdry and sdf field with a finer grid
-    char fadf_sdf[256];
-    sprintf(fadf_sdf,"%s/adf_sdf_field.txt",file_name_prefix);
-    FILE *fadf_sdfout=fopen(fadf_sdf,"a");
-
-    for(int i=0;i<10*gnx;i++){
-        for(int j=0;j<10*gny;j++){
-        	double grid_mx=ax+(i+0.5)*0.1*gdx; 
-        	double grid_my=ay+(j+0.5)*0.1*gdy; 
-
-        	fprintf(fadf_sdfout,"%g ",sdf_adf(grid_mx,grid_my));
-
-        }
-        fprintf(fadf_sdfout,"\n");
-        
-    }
-    fclose(fadf_sdfout);
-*/
-
-
 //check and print out only adf_bdry with a finer grid
     char fadf[256];
     sprintf(fadf,"%s/adf_field.txt",file_name_prefix);
@@ -1048,10 +1054,7 @@ t_generate_pt_in_grid=omp_get_wtime()-t0;
         
     }
     fclose(fadfout);
-
-
-	//printf("finished init points, new check \n");
-	//check_pt_ctgr();
+*/
 
 }
 

@@ -13,7 +13,7 @@ using namespace voro;
 shape_2d::shape_2d(container_2d &con_, int num_t_)
 	: num_t(num_t_), 
 	ax(con_.ax), bx(con_.bx), ay(con_.ay), by(con_.by), 
-    is_custom_shape_contour(false),
+    is_custom_shape_contour(false), shape_scaling(false),
 
 	geo_grid(new int[1]), 
     geo_igrid_ij(new int[1]), 

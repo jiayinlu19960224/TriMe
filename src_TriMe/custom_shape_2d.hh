@@ -51,6 +51,10 @@ namespace voro {
 
         bool normalize_model; /**< If true, the model will be normalized to fit and centered into the container domain.
                                * The model's longest dimension will be in [ax+0.1*(bx-ax), ax+0.9*(bx-ax)]x[ay+0.1*(by-ay),ay+0.9*(by-ay)]. */
+        double scale_min_domain_range; /**< scaling parameter, std::min(bx-ax,by-ay). */
+        double scale_xmid; /**< scaling parameter, midpoint x-coordinate of the input shape. */
+        double scale_ymid; /**< scaling parameter, midpoint y-coordinate of the input shape. */
+        double scale_max_range; /**< scaling parameter, max(height,width) of the input shape. */
 
         int num_t; /**< Number of parallel threads. */
 

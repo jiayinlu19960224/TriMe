@@ -284,15 +284,6 @@ void mesh_alg_2d_cvd::adaptive_compute_voro_centroid(int pid,double &cx,double &
         cx=c1x;
         cy=c1y;
 
-//code testing: 
-//print out: subdivide_level, tria_make_ct, voro area, centroid_error,  subdivide_etol
-//char bug00[256];
-//sprintf(bug00,"adaptive_voro_tria_subdivide_test_%d.txt",tria_iter_ct);
-//FILE *outFile00 = fopen(bug00, "a");
-//fprintf(outFile00,"%d %d %g %g %g \n",
-//    subdivide_level, tria_make_ct, voro_area, centroid_error, subdivide_etol);
-//fclose(outFile00);
-
     }
 }
 
@@ -308,7 +299,7 @@ void mesh_alg_2d_cvd::update_pt_position_and_determine_reTria(){
     //pt position was already updated in Voro compute part. 
     //update them in xy_id array
     #pragma omp parallel for num_threads(num_t)
-    for(int i=0;i<Ncurrent;i++){
+    for(int i=Nfixed;i<Ncurrent;i++){
         int i2=2*i;
         pm2d->xy_id[i2]=xy_id_new[i2];
         pm2d->xy_id[i2+1]=xy_id_new[i2+1];
@@ -340,56 +331,60 @@ void mesh_alg_2d_cvd::update_pt_position_cvd(int i, voronoicell_neighbor_2d &c,
     double x, double y, int &inner_pt_over_stop_Continue_mvmt_thres_ct_,
     bool use_random_point, double random_point_x, double random_point_y){
 
-    double px_new,py_new;
-    double final_x,final_y;
-    if(use_random_point){
-        final_x=random_point_x;
-        final_y=random_point_y;
-        if(pm2d->pt_ctgr[i]!=-1){
-            pm2d->pt_ctgr[i]=-1;
-            #pragma omp atomic
-            pm2d->inner_pt_ct++;
-        }
-    }
-    else{
-        //For each point and its Voronoi cell,
-        //calculate the centroids of the Voronoi cell
-        //then apply pt treatment and projections,
-        //and get final pt positions, store in xy_id
-        //also, count number of inner pts over stop_Continue movement criteria
-        int voro_vertex_ct=0;
-        std::vector<double> voro_vertex_xy;
-        //collect voronoi cell vertex
-        if(c.p!=0){
-            int k=0;
-            do {
-                voro_vertex_xy.push_back(x+0.5*c.pts[2*k]);   //i<<2 is the same as i*4
-                voro_vertex_xy.push_back(y+0.5*c.pts[2*k+1]);
-                voro_vertex_ct++;
-                k=c.ed[2*k];
-            } while (k!=0);
-            voro_vertex_xy.push_back(x+0.5*c.pts[0]); 
-            voro_vertex_xy.push_back(y+0.5*c.pts[1]); //closed polygon, last=first vertex
-        }
-
-        //calculate centroid of Voronoi cell of the current point
-        adaptive_compute_voro_centroid(i,px_new,py_new,voro_vertex_ct,voro_vertex_xy);
-        pt_mvmt_treatment_projection(i,x,y,px_new,py_new,final_x,final_y);
-    }
-
-    double pt_movement=d_points(x,y,final_x,final_y);
-    int i_old=(x-ax)*inv_gdx;
-    int j_old=(y-ay)*inv_gdy;
-    int ij_old=j_old*gnx+i_old;
-    prev_pt_mvmt_chrtrt_fac[i]=std::round(pt_movement/chrtrt_len_h(ij_old) * 1000.0) * fac_thousandth;
-    //test if inner point pi movement larger than stop_Continue_mvmt_thres
-    if(inner_pt_movement_over_stop_Continue_mvmt_thres(i,pt_movement,stop_Continue_mvmt_thres[ij_old])==true){
-        inner_pt_over_stop_Continue_mvmt_thres_ct_+=1;
-    }
-
     int i2=2*i;
-    xy_id_new[i2]=final_x;
-    xy_id_new[i2+1]=final_y;
+
+    if(i>=Nfixed){
+        double px_new,py_new;
+        double final_x,final_y;
+        if(use_random_point){
+            final_x=random_point_x;
+            final_y=random_point_y;
+            if(pm2d->pt_ctgr[i]!=-1){
+                pm2d->pt_ctgr[i]=-1;
+                #pragma omp atomic
+                pm2d->inner_pt_ct++;
+            }
+        }
+        else{
+            //For each point and its Voronoi cell,
+            //calculate the centroids of the Voronoi cell
+            //then apply pt treatment and projections,
+            //and get final pt positions, store in xy_id
+            //also, count number of inner pts over stop_Continue movement criteria
+            int voro_vertex_ct=0;
+            std::vector<double> voro_vertex_xy;
+            //collect voronoi cell vertex
+            if(c.p!=0){
+                int k=0;
+                do {
+                    voro_vertex_xy.push_back(x+0.5*c.pts[2*k]);   //i<<2 is the same as i*4
+                    voro_vertex_xy.push_back(y+0.5*c.pts[2*k+1]);
+                    voro_vertex_ct++;
+                    k=c.ed[2*k];
+                } while (k!=0);
+                voro_vertex_xy.push_back(x+0.5*c.pts[0]); 
+                voro_vertex_xy.push_back(y+0.5*c.pts[1]); //closed polygon, last=first vertex
+            }
+
+            //calculate centroid of Voronoi cell of the current point
+            adaptive_compute_voro_centroid(i,px_new,py_new,voro_vertex_ct,voro_vertex_xy);
+            pt_mvmt_treatment_projection(i,x,y,px_new,py_new,final_x,final_y);
+        }
+
+        double pt_movement=d_points(x,y,final_x,final_y);
+        int i_old=(x-ax)*inv_gdx;
+        int j_old=(y-ay)*inv_gdy;
+        int ij_old=j_old*gnx+i_old;
+        prev_pt_mvmt_chrtrt_fac[i]=std::round(pt_movement/chrtrt_len_h(ij_old) * 1000.0) * fac_thousandth;
+        //test if inner point pi movement larger than stop_Continue_mvmt_thres
+        if(inner_pt_movement_over_stop_Continue_mvmt_thres(i,pt_movement,stop_Continue_mvmt_thres[ij_old])==true){
+            inner_pt_over_stop_Continue_mvmt_thres_ct_+=1;
+        }
+
+        xy_id_new[i2]=final_x;
+        xy_id_new[i2+1]=final_y;
+    }
+    
 }
 
 

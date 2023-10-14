@@ -17,7 +17,7 @@ mesh_alg_2d::mesh_alg_2d(parallel_meshing_2d *pm2d_)
 	gdx(pm2d_->gdx),gdy(pm2d_->gdy),diag_gdxy(pm2d_->diag_gdxy),
 	inv_gdx(pm2d_->inv_gdx),inv_gdy(pm2d_->inv_gdy),
 	geo_bgrid_ct(pm2d_->geo_bgrid_ct),geo_igrid_ct(pm2d_->geo_igrid_ct),
-	Ntotal(pm2d_->Ntotal),Ncurrent(pm2d_->Ncurrent),Nremain(pm2d_->Nremain),
+	Ntotal(pm2d_->Ntotal),Ncurrent(pm2d_->Ncurrent),Nremain(pm2d_->Nremain),Nfixed(pm2d_->Nfixed),
 
 	xy_id_new(new double[2*(pm2d_->Ntotal)]),
 
@@ -30,7 +30,9 @@ mesh_alg_2d::mesh_alg_2d(parallel_meshing_2d *pm2d_)
 	tria_ct(0),tria_vertex(new int[1]),tria_ccrd_h(new double [1]),
 	bar_ct(0),barid(new int[1]),tria_centroid(new double[1]),
 	tria_ar(new double[1]),tria_er(new double[1]),
-	previous_alpha_mean_tria_ar(1.0), previous_alpha_mean_tria_er(1.0)
+	previous_alpha_mean_tria_ar(1.0), previous_alpha_mean_tria_er(1.0),
+
+	tria_order_ccw(false)
 	{
 		tria_ct_private=new int[num_t];
 		tria_vertex_private=new std::vector<int>[num_t];
@@ -306,10 +308,44 @@ void mesh_alg_2d::print_xy_id(const char *file_name_prefix){
 }
 
 /**
+ * @brief Sorts the vertex IDs of triangles to Counter-Clockwise order
+ * 
+ * The order is sorted by calcuting the corss product of the two vectors.
+ * If the order was A,B,C, calcuate the dot product of vector AB=B-A=(a1,a2) and BC=C-B=(b1,b2). 
+ * If the cross product (0,0,a1b2-a2b1) has a1b2-a2b1>0, then A,B,C is the correct order. 
+ * Otherwise, the CCW order is A,C,B.
+ */
+void mesh_alg_2d::sort_tria_vertex_ids_ccw(){
+	#pragma omp parallel for num_threads(num_t)
+	for(int triai=0;triai<tria_ct;triai++){
+		int Aid=tria_vertex[3*triai];
+		int Bid=tria_vertex[3*triai+1];
+		int Cid=tria_vertex[3*triai+2];
+		double Ax=current_x(Aid);
+		double Ay=current_y(Aid);
+		double Bx=current_x(Bid);
+		double By=current_y(Bid);
+		double Cx=current_x(Cid);
+		double Cy=current_y(Cid);
+
+		double a1=Bx-Ax; double a2=By-Ay;
+		double b1=Cx-Bx; double b2=Cy-By;
+
+		if(a1*b2-a2*b1<0){
+			tria_vertex[3*triai+1]=Cid;
+			tria_vertex[3*triai+2]=Bid;
+		}
+    }
+    tria_order_ccw=true;
+}
+
+
+/**
  * @brief Prints the IDs of triangle bar vertices to a text file.
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_bar_ids(const char *file_name_prefix){
+	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_bar_ids.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
@@ -327,6 +363,7 @@ void mesh_alg_2d::print_tria_bar_ids(const char *file_name_prefix){
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_bar_coords(const char *file_name_prefix){
+	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_bar_coords.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
@@ -339,11 +376,13 @@ void mesh_alg_2d::print_tria_bar_coords(const char *file_name_prefix){
     fclose(outFile0);
 }
 
+
 /**
  * @brief Prints the vertex IDs of triangles to a text file.
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_vertex_ids(const char *file_name_prefix){
+	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_vertex_ids.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
@@ -358,6 +397,7 @@ void mesh_alg_2d::print_tria_vertex_ids(const char *file_name_prefix){
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_vertex_coords(const char *file_name_prefix){
+	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_vertex_coords.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
@@ -429,11 +469,11 @@ void mesh_alg_2d::print_worst_tria(const char *file_name_prefix){
  */
 void mesh_alg_2d::print_tria_quality_stat_overall(){
     char bug2[256];
-    sprintf(bug2,"%s_tria_quality_stat_overall.txt",pm2d->file_name_prefix);
+    sprintf(bug2,"%s/tria_quality_stat_overall.txt",pm2d->file_name_prefix);
     FILE *outFile2 = fopen(bug2, "a");
 
-    fprintf(outFile2,"%d %g %g %g %g %g %g %g %g %g %g \n",
-    	tria_ct,
+    fprintf(outFile2,"%d %d %g %g %g %g %g %g %g %g %g %g \n",
+    	tria_iter_ct, tria_ct,
     	max_tria_ar,max_tria_er,
     	median_tria_ar, median_tria_er,
     	mean_tria_ar,mean_tria_er,
@@ -484,20 +524,21 @@ void mesh_alg_2d::do_print_outputs(){
 	char bug0[256];
     sprintf(bug0,"%s/%s_%d",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
 
-	//print_particle_coords(bug0);
-	//print_tria_bar_coords(bug0);
-	//print_voro_diagram(bug0);
-	print_tria_quality_stat(bug0);
-	print_tria_quality_stat_overall();
-	print_worst_tria(bug0);
-	
+	print_particle_coords(bug0);
+	print_xy_id(bug0);
 
-	//print_xy_id(bug0);
-	//print_tria_bar_ids(bug0);
+	print_tria_bar_coords(bug0);
+	print_tria_bar_ids(bug0);
+	print_tria_vertex_ids(bug0);
+	print_tria_vertex_coords(bug0);
 	
-	//print_tria_vertex_ids(bug0);
-	//print_tria_vertex_coords(bug0);
-	
+	print_tria_quality_stat(bug0);
+
+
+	print_tria_quality_stat_overall();
+
+	//print_worst_tria(bug0);
+	//print_voro_diagram(bug0);
 }
 
 /**
@@ -556,21 +597,6 @@ bool mesh_alg_2d::valid_tria(double x0,double y0,double x1,double y1,double x2,d
 		return true;
 	}
 	
-	/*
-	//test 3:
-	//calculate three sides lengths: all should be smaller than tria_length_cri=tri_length_cri_fac*max(h_va,h_vb,h_vc)
-	//if any length larger, return false;
-	double h_v0=get_chrtrt_len_h(x0,y0);
-	double h_v1=get_chrtrt_len_h(x1,y1);
-	double h_v2=get_chrtrt_len_h(x2,y2);
-	double max_hv012=max(h_v0,max(h_v1,h_v2));
-	double tria_length_cri=tria_length_cri_fac*max_hv012;
-	double l01=d_points(x0,y0,x1,y1);
-	double l02=d_points(x0,y0,x2,y2);
-	double l12=d_points(x1,y1,x2,y2);
-	if(l01>tria_length_cri || l02>tria_length_cri || l12>tria_length_cri){return false;}
-	*/
-
 	//test 4: 
 		//find circumcenter of triangle
 			//if circumcenter in outer grid, return false
@@ -675,11 +701,17 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
         			if(vid1<vid2){
                 		use_random_point=true;
         			}
+        			if(vid2<Nfixed){
+        				use_random_point=true;
+        			}
         		}
         		//c (vid1,vid3) is the smallest length edge
         		if(c<a && c<b){
         			//move the current vertex vid1 to a random point in one of the nearby inner grid
         			if(vid1<vid3){
+        				use_random_point=true;
+        			}
+        			if(vid3<Nfixed){
         				use_random_point=true;
         			}
         		}
@@ -899,52 +931,6 @@ void mesh_alg_2d::voro_compute_and_store_info(bool store_tria_bar,bool store_tri
     bool cvd_pt_update,
     bool store_xy_id, double *&xy_id_store_array){
 
-/*
-//paper plotting: unbounded Voro cell
-int cnx=sqrt(Ncurrent/3.3); int cny=cnx;
-container_2d con2(ax,bx,ay,by,cnx,cny,false,false,16,num_t);
-
-con2.add_parallel(pm2d->xy_id, Ncurrent, num_t);
-con2.put_reconcile_overflow();
-
-container_2d::iterator cli2;
-voronoicell_neighbor_2d c2(con2);
-
-char file_name_temp[256];
-sprintf(file_name_temp,"%s/%s_%d_unclipped_voro.gnu",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
-con2.draw_cells_gnuplot(file_name_temp);
-
-char file_name_temp2[256];
-sprintf(file_name_temp2,"%s/%s_%d_unclipped_tria_bar_coords.txt",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
-FILE *outFile2 = fopen(file_name_temp2, "a");
-
-for(cli2=con2.begin(); cli2<con2.end(); cli2++){
-
-	int ij=(*cli2).ijk;
-	int q=(*cli2).q;
-	int id=con2.id[ij][q];
-	double *pp=con2.p[ij]+con2.ps*q;
-	double x=*(pp++);double y=*pp;
-
-    if(con2.compute_cell(c2, cli2)) {
-        std::vector<int> neigh;   //neighbors of a node
-        //check if Voronoi cell satisfy neighbors requirement
-        c2.neighbors_sorted(neigh); 
-        //Collect triangles info if needed; And calculate alpha_mean
-        for(int i=0;i<(signed int) neigh.size();i++){
-            if (neigh[i]>=0 && neigh[i]>id){ //store bars uniquely: barid2>barid1
-
-            	fprintf(outFile2, "%g %g \n%g %g\n\n", current_x(id),current_y(id), current_x(neigh[i]),current_y(neigh[i]));
-
-
-            }
-        }
-    }
-}
-fclose(outFile2);
-//
-*/
-
 	if(store_max_tria_ar){
 		max_tria_ar_prev=max_tria_ar;
 		max_tria_ar=-(lx+ly); 
@@ -962,17 +948,6 @@ fclose(outFile2);
 	bool do_tria_ct=true;
 
 	container_2d::iterator cli;
-
-/*
-//paper plottting
-char file_name_prefix[256];
-sprintf(file_name_prefix,"%s/%s_%d",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
-
-char bug0[256];
-sprintf(bug0,"%s_tria_bar_coords_full.txt",file_name_prefix);
-FILE *outFile0 = fopen(bug0, "a");
-//
-*/
 
 	#pragma omp parallel num_threads(num_t)
 	{   
@@ -1038,11 +1013,6 @@ FILE *outFile0 = fopen(bug0, "a");
 				        //Collect triangles info if needed; And calculate alpha_mean
 				        for(int i=0;i<(signed int) neigh.size();i++){
 				            if (neigh[i]>=0 && neigh[i]>id){ //store bars uniquely: barid2>barid1
-/*
-//paper plottting
-fprintf(outFile0, "%g %g\n %g %g\n\n", current_x(id),current_y(id), current_x(neigh[i]),current_y(neigh[i]));
-//
-*/
 
 				            	bool barid_store=false;
 
@@ -1155,11 +1125,6 @@ fprintf(outFile0, "%g %g\n %g %g\n\n", current_x(id),current_y(id), current_x(ne
 	    }
 	}
 
-/*
-//paper plottting
-fclose(outFile0);
-//
-*/
 	//obtain full set of triangle ct, triangle vertex, triangle circumradius, triangle circumradius/h_i	
 	bar_ct=0;
 	tria_ct=0;
@@ -1266,6 +1231,7 @@ fclose(outFile0);
 	            	tria_centroid[ii2+indp_twi+1]=tria_centroid_private[i][ii2+1];
 	        	}
 	        }
+	        if(store_tria_vertex){tria_order_ccw=false;}
 	    }
 
         if(store_tria_bar){
@@ -1373,20 +1339,6 @@ printf("start add pt \n");
 		store_xy_id,dummy_array);
 	delete [] dummy_array;
 
-
-/*
-//----------------paper plot--------
-char bug0[256];
-sprintf(bug0,"add_pt_tria_iter_%d",tria_iter_ct);
-
-print_particle_coords(bug0);
-print_tria_bar_coords(bug0);
-
-char bug1[256];
-sprintf(bug1,"add_pt_coords_tria_iter_%d.txt",tria_iter_ct);
-FILE *outFile1 = fopen(bug1, "a");
-*/
-
 //---------------------------------------------------------------------
 	//sort triangles index based on ccrd/h, in descending order
     std::vector<int> ccrd_h_sorted_ind(tria_ct);
@@ -1411,16 +1363,9 @@ double t0=omp_get_wtime();
     	pm2d->xy_id[m2]=new_x;
     	pm2d->xy_id[m2+1]=new_y;
 
-
-//fprintf(outFile1, "%g %g\n", new_x,new_y);
-
     }
 t_add_pt_centroid+=omp_get_wtime()-t0;
 
-//------------paper plot
-
-//fclose(outFile1);
-//----------------
 
 	Nremain-=Nadd;
 	int Ncurrent_old=Ncurrent;
@@ -1481,6 +1426,11 @@ t_add_pt_centroid+=omp_get_wtime()-t0;
     			inner_pt_ct_temp+=1;
 			}
 			else{ //pt_adf>pt_bgrid_geps: outside of geometry with new geps
+				if(i<Nfixed){
+					printf("ERROR: Add new pt procedure: fixed pt (%g %g) in geo bdry grid but not in/on geometry.\n",x,y);
+			    	throw std::exception();
+				}
+
 				double new_x, new_y;
 				if(pt_projection(new_x,new_y,x,y,-1,-1)==true){ //(new_x,new_y) on geo bdry/inner grid now
 					pm2d->xy_id[i2]=new_x;
@@ -1523,6 +1473,9 @@ t_add_pt_centroid+=omp_get_wtime()-t0;
                 	int pgridij=gnx*pgridj+pgridi;
                 	bool continue_search=true;
                 	
+                	std::vector<int> inner_grid_found;
+        	        int inner_grid_found_ct=0;
+                	
                 	while(continue_search){
                 		int il=pgridi-incre;int ih=pgridi+incre;
                 		int jl=pgridj-incre;int jh=pgridj+incre;
@@ -1539,12 +1492,9 @@ t_add_pt_centroid+=omp_get_wtime()-t0;
                 						int gridij=gnx*gridj+gridi;
                 						if(geo_grid(gridij)<0){ //inner grid
                 							continue_search=false;
-                							double grid_mx=ax+(0.5+gridi)*gdx; 
-                							double grid_my=ay+(0.5+gridj)*gdy;
-                							pm2d->xy_id[i2]=grid_mx;
-											pm2d->xy_id[i2+1]=grid_my;
-                							pm2d->pt_ctgr[i]=-1; //tag inner pt
-    										inner_pt_ct_temp+=1;
+                							inner_grid_found.push_back(gridi);
+	            							inner_grid_found.push_back(gridj);
+	            							inner_grid_found_ct++;
                 						}
                 					}
                 				}
@@ -1552,20 +1502,38 @@ t_add_pt_centroid+=omp_get_wtime()-t0;
                 		}
                 		incre++;
                 	}
+                	
+                	unsigned int seed_i=omp_get_thread_num()+100;
+                	//Select a random inner grid in the outer layer found
+	            	int random_igrid_found_i2=2* (rand_r(&seed_i) % inner_grid_found_ct); //random int from 0 to inner_grid_found_ct-1
+	            	int gridi=inner_grid_found[random_igrid_found_i2];
+	            	int gridj=inner_grid_found[random_igrid_found_i2+1];
+	            	double random_point_x=ax+(rnd_r(&seed_i)+gridi)*gdx; 
+	            	double random_point_y=ay+(rnd_r(&seed_i)+gridj)*gdy;
+					pm2d->xy_id[i2]=random_point_x;
+					pm2d->xy_id[i2+1]=random_point_y;
+					pm2d->pt_ctgr[i]=-1; //tag inner pt
+                	inner_pt_ct_temp+=1;
 
 				}
 			}
 		}
 		else{
-    		printf("ERROR: prev bdry pt (%g %g) not in inner nor geo bdry grid.\n",x,y);
-    		throw std::exception();
+			if(i<Nfixed){
+				printf("ERROR: Add new point procedure: Fixed pt (%g %g) not in inner nor geo bdry grid.\n",x,y);
+    			throw std::exception();
+			}
+			else{
+				printf("ERROR: Add new point procedure: prev bdry pt (%g %g) not in inner nor geo bdry grid.\n",x,y);
+				throw std::exception();
+			}
+    		
     	}
 		
 	}
 	pm2d->inner_pt_ct=inner_pt_ct_temp;
 
 printf("finished added points \n");
-//pm2d->check_pt_ctgr();
 //---------------------------------------------------------------------
 
 }

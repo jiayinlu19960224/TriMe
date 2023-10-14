@@ -126,6 +126,7 @@ namespace voro {
         int Ntotal; /**< Total number of meshing points. */
         int Ncurrent; /**< Current number of meshing points. */
         int Nremain; /**< Remaining number of meshing points, Nremain=Ntotal-Ncurrent. */
+        int Nfixed;
 
         //helper functions and variables
         /**
@@ -498,7 +499,23 @@ namespace voro {
         void print_xy_id(const char *file_name_prefix); 
 
         /**
-         * Prints the triangle bar ids to a file with the given file name prefix.
+         * Boolean variable tracking whether triangle id's are ordered in CCW direction.
+         */
+        bool tria_order_ccw;
+
+        /**
+         * @brief Sorts the vertex IDs of triangles to Counter-Clockwise order
+         * 
+         * The order is sorted by calcuting the corss product of the two vectors.
+         * If the order was A,B,C, calcuate the dot product of vector AB=B-A=(a1,a2) and BC=C-B=(b1,b2). 
+         * If the cross product (0,0,a1b2-a2b1) has a1b2-a2b1>0, then A,B,C is the correct order. 
+         * Otherwise, the CCW order is A,C,B.
+         */
+        void sort_tria_vertex_ids_ccw();
+
+        /**
+         * Prints the triangle bar ids to a file with the given file name prefix. 
+         * Triangle vertex are in CCW order.
          *
          * @param file_name_prefix The prefix of the file name to be used for printing.
          */
@@ -506,6 +523,7 @@ namespace voro {
 
         /**
          * Prints the triangle bar coordinates to a file with the given file name prefix.
+         * Triangle vertex are in CCW order.
          *
          * @param file_name_prefix The prefix of the file name to be used for printing.
          */
@@ -513,6 +531,7 @@ namespace voro {
 
         /**
          * Prints the triangle vertex ids to a file with the given file name prefix.
+         * Triangle vertex are in CCW order.
          *
          * @param file_name_prefix The prefix of the file name to be used for printing.
          */
@@ -520,6 +539,7 @@ namespace voro {
 
         /**
          * Prints the triangle vertex coordinates to a file with the given file name prefix.
+         * Triangle vertex are in CCW order.
          *
          * @param file_name_prefix The prefix of the file name to be used for printing.
          */

@@ -225,7 +225,8 @@ namespace voro {
 
 
         // Point initialization variables
-        double* xy_id; /**< If undefined: x=ax+bx, y=ay+by */
+        double* xy_id; /**< If undefined: x=ax+bx, y=ay+by; The first Nfixed points are the fixed points. */
+        double* xy_id_fixed_pt_init; /**< Temporary variable to store the inputted fixed points */
         int* pt_ctgr; /**< Point category: inner -1, boundary 1 (abs(sdf)<=geps), undefined 0 */
         int inner_pt_ct; /**< Number of inner points */
         double chrtrt_len_h_avg; /**< Average characteristic element size lengthscale h (adaptive) */
@@ -234,9 +235,10 @@ namespace voro {
         double* bgrid_deps; /**< Projection delta_x, delta_y for boundary grids (adaptive) */
         adf_2d** bgrid_adf; /**< ADF quad cell for boundary grids (adaptive) */
         adf_stat_2d** bgrid_adf_stat; /**< Statistics for boundary ADFs: error, depth, cell count */
-        int Ntotal; /**< Total number of points */
+        int Ntotal; /**< Total number of meshing points: fixed + moving points */
         int Ncurrent; /**< Current number of points */
         int Nremain; /**< Remaining number of points */
+        int Nfixed; /**< Number of fixed points> */
         bool bdry_adf_construction; /**< Flag indicating whether boundary ADF construction is enabled */
 
 
@@ -305,6 +307,27 @@ namespace voro {
         void error_diffusion(bool generate_pt, double diff,
             int ij, int *&bgrid_ingeo_outgeo_ctgr,
             double *&Ncurrent_rho_igrid,double *&Ncurrent_rho_bgrid_ingeo);
+
+        /** 
+         * Add fixed points into the mesh. Rescale the points using the same scaling as the scaling of shp.
+         * 
+         * @param Nfixed The number of fixed points
+         * @param shp A custom_shape_2d model, whose scaling parameters we will use for normalizing the fixed points
+         * @param fixed_pt_list the x and y coordinations of the fixed points
+         */
+        void add_fixed_points_normailze(int Nfixed_, shape_2d* shp_, double* fixed_pt_list);
+        /** 
+         * Add fixed points into the mesh.
+         * 
+         * @param Nfixed The number of fixed points
+         * @param fixed_pt_list the x and y coordinations of the fixed points
+         */
+        void add_fixed_points(int Nfixed_, double* fixed_pt_list);
+
+        /**
+         * Adding fixed points to the mesh. Used in pt_init() function.
+         */
+        void add_fixed_points_procedure();
 
         /**
          * @brief Initialize points.

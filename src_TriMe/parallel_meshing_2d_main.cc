@@ -157,7 +157,7 @@ int main() {
      printf("create pm2d and pt init\n");
      t0=omp_get_wtime();
      parallel_meshing_2d pm2d(&con, &shp, &size_field, num_t_setup, output_interval, case_name_base);
-     pm2d.pt_init(Ntotal);
+     pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
      t1=omp_get_wtime(); 
      pm2d_duration=t1-t0;
      printf("finished pm2d and pt init: duration %g\n",t1-t0);

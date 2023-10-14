@@ -205,7 +205,7 @@ void sizing_2d_automatic::get_bdry_pts(){
     delete [] bdry_ct_private;
     delete [] bdry_xy_private;
 
-
+/*
     char fb[256];
     sprintf(fb,"bdry_pts_old.txt");
     FILE *fbout=fopen(fb,"a");
@@ -216,7 +216,7 @@ void sizing_2d_automatic::get_bdry_pts(){
         fprintf(fbout,"%g %g \n",bx,by);
     }
     fclose(fbout);
-
+*/
     //===========================Process points: So they are not too close together =============
     //Now, we have initial set of bdry points, stored in:
         //bdry_pt_xy_temp
@@ -653,16 +653,16 @@ printf("medial_trim_region_check_r: %g, medial_region_check_grid_ct: %d \n", med
         grid_medial_xy_temp[gridij].push_back(py);
     }
 
-
+/*
 char bug0[256];
 sprintf(bug0,"bdry_pts_voro_diagram.gnu");
 con.draw_cells_gnuplot(bug0);
-
+*/
 
     con.clear();
 
 
-    
+    /*
     char fm[256];
     sprintf(fm,"medial_pts_old.txt");
     FILE *fmout=fopen(fm,"a");
@@ -673,7 +673,7 @@ con.draw_cells_gnuplot(bug0);
         fprintf(fmout,"%g %g \n",mx,my);
     }
     fclose(fmout);
-    
+    */
 
 
     //tag: 0 keep; -1 discard

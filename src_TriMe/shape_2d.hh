@@ -54,6 +54,12 @@ namespace voro {
         int geo_igrid_ct; /**< Number of geometry inner grids. */
         int geo_ogrid_ct; /**< Number of geometry outer grids. */
 
+        //shape scaling parameters
+        bool shape_scaling; /**< Flag to determine scaling shape input or not. Only available for custom_shape_2d input. */
+        double scale_min_domain_range; /**< scaling parameter, std::min(bx-ax,by-ay). */
+        double scale_xmid; /**< scaling parameter, midpoint x-coordinate of the input shape. */
+        double scale_ymid; /**< scaling parameter, midpoint y-coordinate of the input shape. */
+        double scale_max_range; /**< scaling parameter, max(height,width) of the input shape. */
 
         /**
          * @brief Gets the geometry grid of size gnx*gny categorizing inner/outer/boundary grid.
@@ -502,6 +508,13 @@ namespace voro {
             :shape_2d(con_,num_t_),
              cshp(custom_shape_2d(boundaries_, con_.ax, con_.bx, con_.ay, con_.by, normalize_model_,num_t_cshp_))
              {
+                if(normalize_model_==true){
+                    shape_scaling=true;
+                    scale_min_domain_range=cshp.scale_min_domain_range;
+                    scale_xmid=cshp.scale_xmid;
+                    scale_ymid=cshp.scale_ymid;
+                    scale_max_range=cshp.scale_max_range;
+                }
                 is_custom_shape_contour=true;
                 get_geometryGrid();
              }

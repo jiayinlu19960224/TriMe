@@ -111,12 +111,12 @@ t0=omp_get_wtime();
 t1=omp_get_wtime();
 t_c2=t1-t0;
 
-        double max_range=xmax-xmin;
-        if(ymax-ymin>max_range){max_range=ymax-ymin;}
-        double xmid=0.5*(xmin+xmax);
-        double ymid=0.5*(ymin+ymax);
+        scale_max_range=xmax-xmin;
+        if(ymax-ymin>scale_max_range){scale_max_range=ymax-ymin;}
+        scale_xmid=0.5*(xmin+xmax);
+        scale_ymid=0.5*(ymin+ymax);
         
-        double min_domain_range=std::min(bx-ax,by-ay);
+        scale_min_domain_range=std::min(bx-ax,by-ay);
         
 t0=omp_get_wtime();
         //normalize shape so that the model fix into domain box, biggest dimension of moedel is normalize_model_length_fac of the size of the minimum length side of the box
@@ -128,9 +128,9 @@ t0=omp_get_wtime();
             #pragma omp parallel for num_threads(num_t)
             for(int j=0;j<seg_ct[i]+1;j++){
                 //scale and center x component of point
-                b_pts[i][2*j]=min_domain_range*normalize_model_length_fac*(b_pts[i][2*j]-xmid)/max_range+0.5*(bx-ax);
+                b_pts[i][2*j]=scale_min_domain_range*normalize_model_length_fac*(b_pts[i][2*j]-scale_xmid)/scale_max_range+0.5*(bx-ax);
                 //scale and center y component of point
-                b_pts[i][2*j+1]=min_domain_range*normalize_model_length_fac*(b_pts[i][2*j+1]-ymid)/max_range+0.5*(by-ay);
+                b_pts[i][2*j+1]=scale_min_domain_range*normalize_model_length_fac*(b_pts[i][2*j+1]-scale_ymid)/scale_max_range+0.5*(by-ay);
             }
         }
 t1=omp_get_wtime();
@@ -138,6 +138,7 @@ t_c3=t1-t0;
 
     }
 
+/*
 //---------------------print out the (normalized) geometry contour line segments---------------------
     char fb[256];
     sprintf(fb,"geo_bdry_line_segs.txt");
@@ -156,7 +157,7 @@ t_c3=t1-t0;
         }
     fclose(fbout);
 //----------------------------------------------------------------------------------------------------
-
+*/
 
     double lineSeg_len_avg=0.0;
     int lineSeg_ct=0;

@@ -291,7 +291,7 @@ void mesh_alg_2d_hybrid::update_pt_position_and_determine_reTria(){
         //pt position was already updated in Voro compute part. 
         //update them in xy_id array
         #pragma omp parallel for num_threads(num_t)
-        for(int i=0;i<Ncurrent;i++){
+        for(int i=Nfixed;i<Ncurrent;i++){
             int i2=2*i;
             pm2d->xy_id[i2]=xy_id_new[i2];
             pm2d->xy_id[i2+1]=xy_id_new[i2+1];
@@ -329,7 +329,7 @@ void mesh_alg_2d_hybrid::update_pt_position_and_determine_reTria(){
             //and get final pt positions, store in xy_id
             //also, if Ncurrent==Ntotal, count number of inner pts over stop_Continue movement criteria
             #pragma omp for reduction(+:inner_pt_over_stop_Continue_mvmt_thres_ct, pt_mvmt_btw_tria_large_ct)
-            for(int i=0;i<Ncurrent;i++){
+            for(int i=Nfixed;i<Ncurrent;i++){
                 int i2=2*i;
                 double px_old=pm2d->xy_id[i2];
                 double py_old=pm2d->xy_id[i2+1];
@@ -387,7 +387,7 @@ void mesh_alg_2d_hybrid::update_pt_position_and_determine_reTria(){
             //and get final pt positions, store in xy_id
             //also, if Ncurrent==Ntotal, count number of inner pts over stop_Continue movement criteria
             #pragma omp for reduction(+:inner_pt_over_stop_Continue_mvmt_thres_ct, pt_mvmt_btw_tria_large_ct)
-            for(int i=0;i<Ncurrent;i++){
+            for(int i=Nfixed;i<Ncurrent;i++){
                 int i2=2*i;
                 double px_old=pm2d->xy_id[i2];
                 double py_old=pm2d->xy_id[i2+1];
@@ -420,7 +420,7 @@ void mesh_alg_2d_hybrid::update_pt_position_and_determine_reTria(){
         //pt position was already updated in Voro compute part. 
         //update them in xy_id array
         #pragma omp parallel for num_threads(num_t)
-        for(int i=0;i<Ncurrent;i++){
+        for(int i=Nfixed;i<Ncurrent;i++){
             int i2=2*i;
             pm2d->xy_id[i2]=xy_id_new[i2];
             pm2d->xy_id[i2+1]=xy_id_new[i2+1];
