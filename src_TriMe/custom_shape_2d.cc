@@ -138,7 +138,7 @@ t_c3=t1-t0;
 
     }
 
-/*
+
 //---------------------print out the (normalized) geometry contour line segments---------------------
     char fb[256];
     sprintf(fb,"geo_bdry_line_segs.txt");
@@ -157,7 +157,7 @@ t_c3=t1-t0;
         }
     fclose(fbout);
 //----------------------------------------------------------------------------------------------------
-*/
+
 
     double lineSeg_len_avg=0.0;
     int lineSeg_ct=0;

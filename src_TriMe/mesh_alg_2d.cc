@@ -32,6 +32,8 @@ mesh_alg_2d::mesh_alg_2d(parallel_meshing_2d *pm2d_)
 	tria_ar(new double[1]),tria_er(new double[1]),
 	previous_alpha_mean_tria_ar(1.0), previous_alpha_mean_tria_er(1.0),
 
+	Faces(new HE_face[1]),Vertices(new HE_vert[1]),HE_exist(false),
+
 	tria_order_ccw(false)
 	{
 		tria_ct_private=new int[num_t];
@@ -83,6 +85,9 @@ mesh_alg_2d::~mesh_alg_2d(){
 	delete [] tria_ar;
 	delete [] tria_er;
 	delete [] barid;
+
+	delete [] Faces;
+	delete [] Vertices;
 }
 
 /**
@@ -345,15 +350,26 @@ void mesh_alg_2d::sort_tria_vertex_ids_ccw(){
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_bar_ids(const char *file_name_prefix){
-	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_bar_ids.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
-    
-    for(int barii=0; barii<bar_ct; barii++){
-        int idd=barid[2*barii]; int nidd=barid[2*barii+1];
-        fprintf(outFile0, "%d %d\n", idd,nidd);
-    }
+
+    if(HE_exist==true){
+		//Loop through all edges, and print out the edge coords if edge ID (u,v) is u<v
+		for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
+			int eu=itr_e->second->eu;
+			int ev=itr_e->second->ev;
+			if(eu<ev){
+				fprintf(outFile0, "%d %d\n", eu,ev);
+			}
+		}
+	}
+	else{
+	    for(int barii=0; barii<bar_ct; barii++){
+	        int idd=barid[2*barii]; int nidd=barid[2*barii+1];
+	        fprintf(outFile0, "%d %d\n", idd,nidd);
+	    }
+	}
 
     fclose(outFile0);
 }
@@ -363,17 +379,27 @@ void mesh_alg_2d::print_tria_bar_ids(const char *file_name_prefix){
  * @param file_name_prefix The file name prefix used for the output file.
  */
 void mesh_alg_2d::print_tria_bar_coords(const char *file_name_prefix){
-	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
 	char bug0[256];
     sprintf(bug0,"%s_tria_bar_coords.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
 
-    for(int barii=0; barii<bar_ct; barii++){
-        int idd=barid[2*barii]; int nidd=barid[2*barii+1];
-        fprintf(outFile0, "%g %g \n%g %g\n\n", current_x(idd),current_y(idd), current_x(nidd),current_y(nidd));
-    }
-
-    fclose(outFile0);
+	if(HE_exist==true){
+		//Loop through all edges, and print out the edge coords if edge ID (u,v) is u<v
+		for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
+			int eu=itr_e->second->eu;
+			int ev=itr_e->second->ev;
+			if(eu<ev){
+				fprintf(outFile0, "%g %g \n%g %g\n\n", current_x(eu),current_y(eu), current_x(ev),current_y(ev));
+			}
+		}
+	}
+	else{
+	    for(int barii=0; barii<bar_ct; barii++){
+	        int idd=barid[2*barii]; int nidd=barid[2*barii+1];
+	        fprintf(outFile0, "%g %g \n%g %g\n\n", current_x(idd),current_y(idd), current_x(nidd),current_y(nidd));
+	    }
+	}
+	fclose(outFile0);
 }
 
 
@@ -518,27 +544,85 @@ void mesh_alg_2d::determine_printOutputs(){
 }
 
 /**
+ * @brief Print out the boundary vertices in CCW order; v1, v2, ..., v10 : no wrap around at the end.
+ * 		  Each line correspond to a boundary. 
+ *
+ */
+void mesh_alg_2d::print_bdry_CCW(){
+
+	for(int i=0;i<(signed int) Bdry_Edges_Start.size();i++){
+		char bug0[256];
+		sprintf(bug0,"%s/bdry_vertices_ids_CCW_%d.txt",pm2d->file_name_prefix,i);
+    	FILE *outFile0 = fopen(bug0, "a");
+
+		bool Continue_bdry=true;
+		std::pair<unsigned int, unsigned int> uv0=Bdry_Edges_Start[i];
+		HE_edge* edge_i=Edges[KKey(uv0)];
+		while(Continue_bdry){
+			
+			fprintf(outFile0, "%d \n", edge_i->vert->HE_vert_id);
+
+			//CCW order, go in "prev" direction
+			edge_i=edge_i->prev;
+			if(edge_i==Edges[KKey(uv0)]){
+				Continue_bdry=false;
+			}
+		}
+		fclose(outFile0);
+	}
+
+}
+
+
+/**
  * @brief Prints various outputs related to particle coordinates, triangle bar coordinates, and Voronoi diagrams.
  */
 void mesh_alg_2d::do_print_outputs(){
 	char bug0[256];
     sprintf(bug0,"%s/%s_%d",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
 
-	print_particle_coords(bug0);
-	print_xy_id(bug0);
-
-	print_tria_bar_coords(bug0);
-	print_tria_bar_ids(bug0);
-	print_tria_vertex_ids(bug0);
-	print_tria_vertex_coords(bug0);
 	
-	print_tria_quality_stat(bug0);
+	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
+
+	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
+	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
+	print_tria_vertex_ids(bug0);  //Print out the triangle vertex ID's
+	print_tria_vertex_coords(bug0);  //Print out the triangle vertex coordinates
+	
+	print_tria_quality_stat(bug0);  //Print out the statistics of each triangle's quality measures
 
 
-	print_tria_quality_stat_overall();
+	print_tria_quality_stat_overall(); //Print out the overall triangulation quality statistics
 
-	//print_worst_tria(bug0);
-	//print_voro_diagram(bug0);
+	//print_particle_coords(bug0);  //Print out vertices coordinates
+	//print_worst_tria(bug0);   //Print out the triangles with worst qualities
+	//print_voro_diagram(bug0);   //Print out the associated Voronoi diagram
+}
+
+/**
+ * @brief Prints various outputs related to particle coordinates, triangle bar coordinates, and Voronoi diagrams.
+ * 		  For the final mesh: Implement Half-edge data strucutre, and print the boundary vertices in CCW order. 
+ */
+void mesh_alg_2d::do_print_final_outputs(){
+	if(HE_exist==false){
+		printf("ERROR: Half-edge data strucutre not constructed to print out data of the final mesh.\n");
+    	throw std::exception();
+    }
+
+	char bug0[256];
+    sprintf(bug0,"%s/%s_%d",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
+	
+	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
+	
+	print_tria_vertex_ids(bug0);  //Print out the triangle vertex ID's
+	print_tria_vertex_coords(bug0);  //Print out the triangle vertex coordinates
+	print_tria_quality_stat(bug0);  //Print out the statistics of each triangle's quality measures
+	print_tria_quality_stat_overall(); //Print out the overall triangulation quality statistics
+
+	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
+	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
+	print_bdry_CCW(); //Print out boundary vertices in CCW order; Each line correspond to a separate bdry
+
 }
 
 /**
@@ -611,6 +695,7 @@ bool mesh_alg_2d::valid_tria(double x0,double y0,double x1,double y1,double x2,d
 	double ccr=circumradius_tria(x0,y0,x1,y1,x2,y2);
 	if(sdf_ccc/ccr<tria_ccc_cri_fac){return true;}
 	return false;
+	
 }
 
 /**
@@ -1124,6 +1209,9 @@ void mesh_alg_2d::voro_compute_and_store_info(bool store_tria_bar,bool store_tri
         //exit looping over particles
 	    }
 	}
+
+	//Half-edge data structure needs to be re-calculated
+	HE_exist=false;
 
 	//obtain full set of triangle ct, triangle vertex, triangle circumradius, triangle circumradius/h_i	
 	bar_ct=0;
@@ -2150,7 +2238,7 @@ double t0=omp_get_wtime();
     bool store_xy_id=false;
     double *dummy_array=new double[1];
     if(printOutputs==true){
-		store_barid=true;
+		//store_barid=true;
 		store_triangle_quality=true;
 		store_tria_vertex=true;
 	}
@@ -2168,12 +2256,402 @@ t_voro_computation+=t2-t1;
 
 	//output
 	if(printOutputs==true){
-		do_print_outputs();
+		construct_HE();
+		do_print_final_outputs();
 	}
 double t3=omp_get_wtime();
 //print_tria_quality_stat_overall();
 t_algorithm_all_non_voro+=(t3-t0-(t2-t1));
 }
+
+/**
+ * @brief Construct the Half-edge data structure for the triangulation.
+ * 		  The boundary HE are those with NULL face pointer.
+ * 		  Requires tria_vertex to have been stored in the voro-tria calculation.
+ */
+void mesh_alg_2d::construct_HE(){
+
+printf("constructing HE\n");
+	//clear barid storage to avoid redundancy in storage space
+	delete [] barid;
+	barid=new int[2*1];
+	barid_barct=1;
+	
+	//Initialize variables
+	Edges.clear();
+	Bdry_Edges_Start.clear();
+	delete [] Faces;
+	delete [] Vertices;
+	Faces=new HE_face[tria_ct];
+	Vertices=new HE_vert[Ncurrent];
+
+	//Make sure triangle vertices are CCW oriented
+	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
+printf("A\n");
+	//Construct HE data structure
+	//Loop through the triangles
+	for(int triai=0;triai<tria_ct;triai++){
+		int Aid=tria_vertex[3*triai];
+		int Bid=tria_vertex[3*triai+1];
+		int Cid=tria_vertex[3*triai+2];
+
+		std::vector<std::pair<unsigned int, unsigned int>> tedges;
+		tedges.push_back(std::make_pair(Aid, Bid));
+		tedges.push_back(std::make_pair(Bid, Cid));
+		tedges.push_back(std::make_pair(Cid, Aid));
+
+		//Construct all the HE (u,v) and (v,u) related to the triangle
+		for(int i=0;i<3;i++){
+			std::pair<unsigned int, unsigned int> tedges_i=tedges[i];
+			std::pair<unsigned int, unsigned int> tedges_i_pair=std::make_pair(tedges[i].second, tedges[i].first);
+			if(Edges.find(KKey(tedges_i))==Edges.end()){
+				Edges[KKey(tedges_i)]=new HE_edge();
+				Edges[KKey(tedges_i)]->eu=tedges_i.first;
+				Edges[KKey(tedges_i)]->ev=tedges_i.second;
+			}
+			if(Edges.find(KKey(tedges_i_pair))==Edges.end()){
+				Edges[KKey(tedges_i_pair)]=new HE_edge();
+				Edges[KKey(tedges_i_pair)]->eu=tedges_i_pair.first;
+				Edges[KKey(tedges_i_pair)]->ev=tedges_i_pair.second;
+			}
+			if(Edges[KKey(tedges_i)]->pair == NULL){
+				Edges[KKey(tedges_i)]->pair = Edges[KKey(tedges_i_pair)];
+			}
+			if(Edges[KKey(tedges_i_pair)]->pair == NULL){
+				Edges[KKey(tedges_i_pair)]->pair = Edges[KKey(tedges_i)];
+			}
+			Edges[KKey(tedges_i)]->face=&Faces[triai];
+
+			if(Edges[KKey(tedges_i)]->vert == NULL){
+				Edges[KKey(tedges_i)]->vert = &Vertices[tedges_i.second];
+			}
+			if(Edges[KKey(tedges_i_pair)]->vert == NULL){
+				Edges[KKey(tedges_i_pair)]->vert = &Vertices[tedges_i.first];
+			}
+			//HE vertice u
+			if(Vertices[tedges_i.first].edge==NULL){
+				Vertices[tedges_i.first].edge=Edges[KKey(tedges_i)];
+				Vertices[tedges_i.first].HE_vert_id=tedges_i.first;
+			}
+			//HE vertice v
+			if(Vertices[tedges_i_pair.first].edge==NULL){
+				Vertices[tedges_i_pair.first].edge=Edges[KKey(tedges_i_pair)];
+				Vertices[tedges_i_pair.first].HE_vert_id=tedges_i_pair.first;
+			}
+			//HE triangle Face triai
+			if(i==0){
+				Faces[triai].edge=Edges[KKey(tedges_i)];
+				Faces[triai].HE_face_id=triai;
+			}
+		}
+		//Fill the HE data structure for the edges, vertices, and faces adjacent to the triangle
+		for(int i=0;i<3;i++){
+			std::pair<unsigned int, unsigned int> tedges_i=tedges[i];
+			std::pair<unsigned int, unsigned int> tedges_i_pair=std::make_pair(tedges_i.second, tedges_i.first);
+
+			//HE for (u,v)
+			if(i==2){Edges[KKey(tedges_i)]->next=Edges[KKey(tedges[0])];} else{Edges[KKey(tedges_i)]->next=Edges[KKey(tedges[i+1])];}
+			if(i==0){Edges[KKey(tedges_i)]->prev=Edges[KKey(tedges[2])];} else{Edges[KKey(tedges_i)]->prev=Edges[KKey(tedges[i-1])];}
+		}
+	}
+
+printf("B\n");
+
+	char bug00[256];
+	sprintf(bug00,"tria_bar_coords_debug0.txt");
+	FILE *outFile00 = fopen(bug00, "a");
+
+	//Obtain boundary edges connectivity: bdry HE prev and next
+	//Loop through all edges and obtain the bdry HE's
+	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
+		if(Edges[itr_e->first]->face==NULL){
+			int eu=itr_e->second->eu;
+			int ev=itr_e->second->ev;
+			
+			fprintf(outFile00, "%g %g \n%g %g\n\n", current_x(eu),current_y(eu), current_x(ev),current_y(ev));
+
+		}
+		
+	}
+	fclose(outFile00);
+
+
+	//Fix single triangle holes:
+	//First, find vertices v with >1 (with 2) outgoing bdry edges (i.e. connecting to 4 bdry HE)
+	//Obtain boundary edges connectivity: bdry HE prev and next
+	//Loop through all edges and obtain the bdry HE's
+	std::vector<std::vector<int>> eu_bdry_connect; //Vector: [index] ev1, (ev2)
+	std::unordered_map<int,int> eu_bdry_ind; //Mapping: key: eu ---- Value: index
+	std::vector<int> eu_problematic; //problematic eu's: Vector: eu1,eu2,eu3...
+	int bdry_ind=0;
+	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
+		if(Edges[itr_e->first]->face==NULL){
+			int eu=itr_e->second->eu;
+			int ev=itr_e->second->ev;
+			if(eu_bdry_ind.find(eu)==eu_bdry_ind.end()){
+				eu_bdry_ind[eu]=bdry_ind++;
+				std::vector<int> bdry_ind_temp; bdry_ind_temp.push_back(ev);
+				eu_bdry_connect.push_back(bdry_ind_temp);
+			}
+			else{
+				eu_bdry_connect[eu_bdry_ind[eu]].push_back(ev);
+				eu_problematic.push_back(eu);
+			}
+		}
+	}
+
+
+	//loop through the problematic vertices
+	for(int i=0;i<(signed int)eu_problematic.size();i++){
+		//Loop through the connecting incoming edges and the corresponding triangle
+		bool have_deleted=false; //only delete one of the connecting triangles
+		int eu=eu_problematic[i];
+		if((signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()>2){
+			printf("ERROR: more than 4 bdry half edge connecting to a single bdry vertex!\n");
+			throw std::exception();
+		}
+		//delete a single triangle who two edges are bdry edges and connecting to the vertex
+		for(int ej=0;ej<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ej++){
+			if(have_deleted==false){
+				int ev=eu_bdry_connect[eu_bdry_ind[eu]][ej];
+				//check if the pair edge's Next is the pair edge of another (a)bdry edge and (b)connecting to vertec eu
+				if(Edges[KKey(eu,ev)]->pair->next->pair->face==NULL){
+					//Delete the triangle associated with the Pair HE of eu,ev.
+					//And move the last triangle to the slot
+					int problem_tria_id=Edges[KKey(eu,ev)]->pair->face->HE_face_id;
+					int problem_tria_id3=3*problem_tria_id;
+					int last_tria_id=tria_ct-1;
+					int last_tria_id3=3*last_tria_id;
+					tria_vertex[problem_tria_id3]=tria_vertex[last_tria_id3];
+					tria_vertex[problem_tria_id3+1]=tria_vertex[last_tria_id3+1];
+					tria_vertex[problem_tria_id3+2]=tria_vertex[last_tria_id3+2];
+
+					//Update triangle ct
+					tria_ct--;
+
+					//Update the HE data strcuture: Faces, Edges, Vertices
+					Faces[problem_tria_id].HE_face_id=last_tria_id;
+					Faces[problem_tria_id].edge=Faces[last_tria_id].edge;
+
+					//Delete HE (eu,ev) (ev,eu) (eu,ev2) (ev2,eu)
+					int ev2=Edges[KKey(eu,ev)]->pair->next->ev;
+					//Make new bdry HE
+					Edges[KKey(eu,ev)]->pair->next->next->face=NULL;
+					Edges[KKey(eu,ev)]->pair->next->next->prev=NULL;
+					Edges[KKey(eu,ev)]->pair->next->next->next=NULL;
+					//Erase deleted triangle edges
+					Edges.erase(KKey(eu,ev));
+					Edges.erase(KKey(ev,eu));
+					Edges.erase(KKey(eu,ev2));
+					Edges.erase(KKey(ev2,eu));
+
+					int ejj=ej+1; if(ejj>=(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()){ejj=0;}
+					Vertices[eu].edge=Edges[KKey(eu,eu_bdry_connect[eu_bdry_ind[eu]][ejj])];
+					Vertices[ev].edge=Edges[KKey(ev,ev2)];
+					Vertices[ev2].edge=Edges[KKey(ev2,ev)];
+
+					//Change the flag to signal a connecting triangle has been deleted.
+					have_deleted=true;
+
+
+				}
+			}
+		}
+		//No single triangle found; 
+		//Simply delete all triangles bounded by two bdry edges on one side connecting to the vertex
+		//PS. choose the side with less number of triangles
+		if(have_deleted==false){
+			int ej_chose=0;
+			int e_tria_ct_min=100;
+			for(int ejjj=0;ejjj<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ejjj++){
+				int evvv=eu_bdry_connect[eu_bdry_ind[eu]][ejjj];
+				//count the number of triangles on this side:
+				int e_tria_ct=1;
+				HE_edge *checkE=Edges[KKey(eu,evvv)]->pair->next->pair;
+				while(checkE->face!=NULL){
+					checkE=checkE->next->pair;
+					e_tria_ct++; printf("!!!\n");
+				}
+				if(e_tria_ct<e_tria_ct_min){e_tria_ct_min=e_tria_ct;ej_chose=ejjj;}
+			}
+			printf("triangles to delete near bdry: %d \n",e_tria_ct_min);
+
+			int evvv=eu_bdry_connect[eu_bdry_ind[eu]][ej_chose];
+			//collect HE edges to delete:
+			std::vector<std::vector<int>> edges_to_delete;
+			std::vector<std::vector<int>> new_bdry_edges;
+			std::vector<int> tria_to_delete;
+			std::vector<std::pair<int, HE_edge*>> affected_vertices;
+
+
+			HE_edge *checkE=Edges[KKey(eu,evvv)]->pair->next;
+
+			std::vector<int> edge_ii; edge_ii.push_back(eu); edge_ii.push_back(evvv);
+			std::vector<int> edge_iip; edge_iip.push_back(evvv); edge_iip.push_back(eu);
+			edges_to_delete.push_back(edge_ii);
+			edges_to_delete.push_back(edge_iip);
+			edge_ii.clear(); edge_iip.clear();
+
+
+			edge_ii.push_back(checkE->eu); edge_ii.push_back(checkE->ev);
+			edge_iip.push_back(checkE->pair->eu); edge_iip.push_back(checkE->pair->ev);
+			edges_to_delete.push_back(edge_ii);
+			edges_to_delete.push_back(edge_iip);
+			edge_ii.clear(); edge_iip.clear();
+
+			edge_ii.push_back(checkE->next->eu); edge_ii.push_back(checkE->next->ev);
+			new_bdry_edges.push_back(edge_ii);
+			affected_vertices.push_back(std::make_pair(edge_ii[1],Edges[KKey(edge_ii[1],edge_ii[0])]));
+			edge_ii.clear();
+
+			edge_ii.push_back(checkE->next->pair->next->eu); edge_ii.push_back(checkE->next->pair->next->ev);
+			affected_vertices.push_back(std::make_pair(edge_ii[0],Edges[KKey(edge_ii[0],edge_ii[1])]));
+			edge_ii.clear();
+
+			tria_to_delete.push_back(checkE->face->HE_face_id);
+
+
+
+			while(checkE->pair->face!=NULL){
+				checkE=checkE->pair->next;
+
+				//Collect HE edges to delete
+				edge_ii.push_back(checkE->eu); edge_ii.push_back(checkE->ev);
+				edge_iip.push_back(checkE->pair->eu); edge_iip.push_back(checkE->pair->ev);
+				edges_to_delete.push_back(edge_ii);
+				edges_to_delete.push_back(edge_iip);
+				edge_ii.clear(); edge_iip.clear();
+
+				//Collect new Bdry HE's
+				edge_ii.push_back(checkE->next->eu); edge_ii.push_back(checkE->next->ev);
+				new_bdry_edges.push_back(edge_ii);
+				edge_ii.clear();
+
+				edge_ii.push_back(checkE->next->pair->next->eu); edge_ii.push_back(checkE->next->pair->next->ev);
+				affected_vertices.push_back(std::make_pair(edge_ii[0],Edges[KKey(edge_ii[0],edge_ii[1])]));
+				edge_ii.clear();
+
+				//Collect triangles to delete
+				tria_to_delete.push_back(checkE->face->HE_face_id);
+				
+			}
+
+			//Re-calculate the HE structure after deleting the triangles\
+			//Delete the triangle associated with the Pair HE of eu,ev.
+			//And move the last triangle to the slot
+			for(int triaiii=0;triaiii<e_tria_ct_min;triaiii++){
+				int problem_tria_id=tria_to_delete[triaiii];
+				int problem_tria_id3=3*problem_tria_id;
+				int last_tria_id=tria_ct-1;
+				int last_tria_id3=3*last_tria_id;
+				tria_vertex[problem_tria_id3]=tria_vertex[last_tria_id3];
+				tria_vertex[problem_tria_id3+1]=tria_vertex[last_tria_id3+1];
+				tria_vertex[problem_tria_id3+2]=tria_vertex[last_tria_id3+2];
+
+				//Update triangle ct
+				tria_ct--;
+
+				//Update the HE data strcuture: Faces, Edges, Vertices
+				Faces[problem_tria_id].HE_face_id=last_tria_id;
+				Faces[problem_tria_id].edge=Faces[last_tria_id].edge;
+			}
+
+			//Erase deleted triangle edges
+			for(int edgeiii=0;edgeiii<edges_to_delete.size();edgeiii++){
+				int deu=edges_to_delete[edgeiii][0];
+				int dev=edges_to_delete[edgeiii][1];
+				
+				Edges.erase(KKey(deu,dev));
+			}
+			
+			//Make new bdry HE
+			for(int edgeiii=0;edgeiii<new_bdry_edges.size();edgeiii++){
+				int aeu=new_bdry_edges[edgeiii][0];
+				int aev=new_bdry_edges[edgeiii][1];
+				
+				Edges[KKey(aeu,aev)]->face=NULL;
+				Edges[KKey(aeu,aev)]->prev=NULL;
+				Edges[KKey(aeu,aev)]->next=NULL;
+			}
+
+			//Update the Vertices HE structure: Update one of the edge emanating from the vertex
+			int ejj=ej_chose+1; if(ejj>=(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()){ejj=0;}
+			Vertices[eu].edge=Edges[KKey(eu,eu_bdry_connect[eu_bdry_ind[eu]][ejj])];
+
+			for(std::vector<std::pair<int, HE_edge*>>::iterator viii=affected_vertices.begin();viii!=affected_vertices.end();viii++){
+				Vertices[viii->first].edge=viii->second;
+			}
+
+			have_deleted=true;
+
+		}
+		if(have_deleted==false){
+			printf("Failed to resolve bdry triangles through HE\n");
+			throw std::exception();
+		}
+		
+	}
+	
+printf("C\n");
+
+
+char bug0[256];
+sprintf(bug0,"tria_bar_coords_debug.txt");
+FILE *outFile0 = fopen(bug0, "a");
+	
+	//Obtain boundary edges connectivity: bdry HE prev and next
+	//Loop through all edges and obtain the bdry HE's
+	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
+		if(Edges[itr_e->first]->face==NULL){
+			int eu=itr_e->second->eu;
+			int ev=itr_e->second->ev;
+			Bdry_Edges[eu]=std::make_pair(ev,0); //0 signal not connected yet
+
+			fprintf(outFile0, "%g %g \n%g %g\n\n", current_x(eu),current_y(eu), current_x(ev),current_y(ev));
+
+		}
+	}
+
+fclose(outFile0);
+
+	//clear memory of intermediate variables
+	eu_bdry_connect.clear();
+	eu_bdry_ind.clear();
+	eu_problematic.clear(); 
+
+printf("D\n");
+
+	//Loop through the boundary half edges, and find the conenectivity
+	for(std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>>::iterator itr_e=Bdry_Edges.begin();itr_e!=Bdry_Edges.end();itr_e++){
+		int connected=itr_e->second.second;
+		if(connected==0){
+			int eu=itr_e->first;
+			int ev=itr_e->second.first;
+			Bdry_Edges_Start.push_back(std::make_pair(eu,ev));
+			bool Continue_bdry=true;
+			int eu0=eu; int ev0=ev;
+			while(Continue_bdry){
+				int nextu=ev;
+				int nextv=Bdry_Edges[ev].first;
+				Edges[KKey(eu,ev)]->next=Edges[KKey(nextu,nextv)];
+				Edges[KKey(nextu,nextv)]->prev=Edges[KKey(eu,ev)];
+				Bdry_Edges[eu].second=1;
+				Bdry_Edges[nextu].second=1;
+				eu=nextu;
+				ev=nextv;
+				if(eu==eu0){
+					Continue_bdry=false;
+				}
+			}
+		}
+	}
+
+	Bdry_Edges.clear();
+	HE_exist=true;
+printf("E\n");
+}
+
+
 
 
 /**

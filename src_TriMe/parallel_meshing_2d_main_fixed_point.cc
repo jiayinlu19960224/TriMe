@@ -62,13 +62,13 @@ int main() {
     int physical_core=4;
     int num_t_setup=physical_core;
     int num_t_setup_cshp=4; //for custom_shape_2d: since the boundary line segments count is small, we use serial code nt=1 to avoid parallel overhead
-    int method_ind_0=2; //Yes: 0, 1, 3
+    int method_ind_0=0; //Yes: 0, 1, 3
 
 
    int method_ind=method_ind_0; //0 DM; 1 CVD; 2 Hybrid
-   int Ntotal=2000; 
+   int Ntotal=5000; 
    double K=0.05; //0.005; 0:uniform sizing field
-   int output_interval=1; //int: 0, no output; -1, last final output; 10, every 10 triangulations output
+   int output_interval=-1; //int: 0, no output; -1, last final output; 10, every 10 triangulations output
 
    char method_name[256];
    if(method_ind==0){

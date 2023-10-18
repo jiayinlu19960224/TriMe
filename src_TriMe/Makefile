@@ -15,7 +15,7 @@ objs=basic_calculation.o parallel_meshing_2d.o shape_2d.o custom_shape_2d.o \
 src=$(patsubst %.o,%.cc,$(objs))
 
 # List of executables
-execs= parallel_meshing_2d_main parallel_meshing_2d_main_b
+execs= parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point
 
 # Makefile rules
 all:
@@ -32,7 +32,7 @@ depend: $(src)
 parallel_meshing_2d_main: parallel_meshing_2d_main.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++
 
-parallel_meshing_2d_main_b: parallel_meshing_2d_main_b.cc $(objs)
+parallel_meshing_2d_main_fixed_point: parallel_meshing_2d_main_fixed_point.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++
 
 

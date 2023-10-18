@@ -3,10 +3,46 @@
 
 #include "voro++.hh"
 #include "basic_calculation.hh"
+#include <unordered_map>
 
 namespace voro {
 
     class parallel_meshing_2d;
+    struct HE_edge;
+    struct HE_vert;
+    struct HE_face;
+
+    /**
+     * @breif Edge struct for constructing half-edge (HE) data structure.
+     */
+    struct HE_edge
+    {
+      int eu;
+      int ev;
+      HE_edge* prev; //previous half-edge around the triangle face
+      HE_edge* next; //next HE around the triangle face
+      HE_edge* pair; //oppositely oriented adjacent HE
+      HE_vert* vert; //vertex at end of HE
+      HE_face* face; //triangle face the HE borders
+    };
+
+    /**
+     * @breif Vertex struct for constructing half-edge (HE) data structure.
+     */
+    struct HE_vert
+    {
+      int HE_vert_id; 
+      HE_edge* edge; //One of the HE emanating from the vertex
+    };
+
+    /**
+     * @breif Triangle face struct for constructing half-edge (HE) data structure.
+     */
+    struct HE_face
+    {
+      int HE_face_id;
+      HE_edge* edge; //One of the HE bordering the triangle face.
+    };
 
     /**
      * @brief Wall object for cutting a Voronoi cell to an octagon shape based on the local characteristic element edge length.
@@ -263,6 +299,29 @@ namespace voro {
         int bar_ct; /**< Number of unique/non-duplicate bars. */
         int *barid;  /**< Array storing the IDs of unique/non-duplicate bars. */
         int barid_barct; /**< Current size of the barid array. */
+        //Half-edge(HE) data structure to represent the triangulation: variables
+        bool HE_exist;
+        //Cantor pairing function for hash function
+        inline size_t KKey(int i,int j) {
+          return (i+j)*(i+j+1)/2+i;
+        }
+        //Cantor pairing function for hash function
+        inline size_t KKey(std::pair<unsigned int, unsigned int> uv) {
+          int i=uv.first; int j=uv.second;
+          return KKey(i,j);
+        }
+        std::unordered_map<size_t, HE_edge*> Edges; /**< The half-edges of the triangulation. */
+        HE_face* Faces; /**< The triangle faces in the triangulation. */
+        HE_vert* Vertices; /**< The vertices in the triangulation. */
+        std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> Bdry_Edges; /**< The boundary edges. Key: u; Value: <v,0/1>. 0/1 means have been connected with another bdry edge or not. */
+        std::vector<std::pair<unsigned int, unsigned int>> Bdry_Edges_Start; /**< The starting HE of the boundaries. Each boundary has one. */
+        /**
+         * @brief Construct the Half-edge data structure for the triangulation.
+         *      The boundary HE are those with NULL face pointer.
+         *      Requires tria_vertex to have been stored in the voro-tria calculation.
+         */
+        void construct_HE();
+        void print_bdry_CCW();
 
         //add_pt and termination criteria
         double alpha_mean_tria_ar; /**< Alpha-mean value of triangles' aspect ratio */
@@ -576,6 +635,12 @@ namespace voro {
          * Prints all of the above outputs.
          */
         void do_print_outputs(); //print all of the above
+
+        /**
+         * @brief Prints various outputs related to particle coordinates, triangle bar coordinates, and Voronoi diagrams.
+         *      For the final mesh: Implement Half-edge data strucutre, and print the boundary vertices in CCW order. 
+         */
+        void do_print_final_outputs();
         
 
         //virtual: depend on the algorithm using (dm/cvd/hybrid)
