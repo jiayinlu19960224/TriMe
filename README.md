@@ -11,6 +11,17 @@ By Jiayin Lu (1,2), Chris H. Rycroft (2)
 I am very interested to hear from users of the software, so if you find this
 useful or have any questions, please email me at jiayinlu19960224work@gmail.com.
 
+Updates
+================================================
+Oct 19th, 2023: 
+
+(1) Added in fixed point input for meshing with fixed points.
+
+(2) Implemented half-edge structure for final mesh clean up and outputting boundary vertices in
+    counter-clockwise (CCW) order.
+
+(3) Triangle vertex ID's are outputted in CCW order.
+
 Overview
 ========================================================================
 TriMe++ is a multi-threaded software library designed for generating adaptive 2D meshes for intricate 
