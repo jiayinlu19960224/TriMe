@@ -534,24 +534,29 @@ void parallel_meshing_2d::add_fixed_points(int Nfixed_, double* fixed_pt_list){
  */
 void parallel_meshing_2d::add_fixed_points_procedure(){
 	if(Nfixed>0){
-		//print fixed points
-		char bug0[256];
-	     sprintf(bug0,"%s/fixed_pt_coords.par",file_name_prefix);
-	     FILE *outFile0 = fopen(bug0, "a");
-	     for(int i=0;i<Nfixed;i++){
-	        fprintf(outFile0,"%g %g \n",xy_id_fixed_pt_init[2*i], xy_id_fixed_pt_init[2*i+1]);
-	     }
-	     fclose(outFile0);
-
 		printf("start adding %d fixed pt \n",Nfixed);
 	//---------------------------------------------------------------------
 		//the first Nfixed points are fixed points
+		
+		char bug0[256];
+	    sprintf(bug0,"%s/fixed_pt_id.txt",file_name_prefix);
+	    FILE *outFile0 = fopen(bug0, "a");
+
+	    char bug1[256];
+	    sprintf(bug1,"%s/fixed_pt_coords.txt",file_name_prefix);
+	    FILE *outFile1 = fopen(bug1, "a");
+
 	    #pragma omp parallel for num_threads(num_t) schedule(guided) 
 	    for(int i=0;i<Nfixed;i++){
 	    	int i2=2*i;
 	    	xy_id[i2]=xy_id_fixed_pt_init[i2];
 	    	xy_id[i2+1]=xy_id_fixed_pt_init[i2+1];
+
+	    	fprintf(outFile0,"%d \n",i);
+	    	fprintf(outFile1,"%g %g \n",xy_id[i2], xy_id[i2+1]);
 	    }
+	    fclose(outFile0);
+	    fclose(outFile1);
 
 		Nremain-=Nfixed;
 		int Ncurrent_old=Ncurrent;

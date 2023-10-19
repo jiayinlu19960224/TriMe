@@ -140,6 +140,7 @@ t_c3=t1-t0;
 
 
 //---------------------print out the (normalized) geometry contour line segments---------------------
+    /*
     char fb[256];
     sprintf(fb,"geo_bdry_line_segs.txt");
     FILE *fbout=fopen(fb,"a");
@@ -156,6 +157,7 @@ t_c3=t1-t0;
             }
         }
     fclose(fbout);
+    */
 //----------------------------------------------------------------------------------------------------
 
 

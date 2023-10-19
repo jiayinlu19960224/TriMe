@@ -307,7 +307,7 @@ void mesh_alg_2d::print_xy_id(const char *file_name_prefix){
     sprintf(bug0,"%s_xy_id.txt",file_name_prefix);
     FILE *outFile0 = fopen(bug0, "a");
     for(int pi=0;pi<Ncurrent;pi++){
-        fprintf(outFile0,"%d %g %g \n",pi,current_x(pi),current_y(pi));
+        fprintf(outFile0,"%g %g \n",current_x(pi),current_y(pi));
     }
     fclose(outFile0);
 }
@@ -555,12 +555,18 @@ void mesh_alg_2d::print_bdry_CCW(){
 		sprintf(bug0,"%s/bdry_vertices_ids_CCW_%d.txt",pm2d->file_name_prefix,i);
     	FILE *outFile0 = fopen(bug0, "a");
 
+    	char bug1[256];
+		sprintf(bug1,"%s/bdry_vertices_coords_CCW_%d.txt",pm2d->file_name_prefix,i);
+    	FILE *outFile1 = fopen(bug1, "a");
+
 		bool Continue_bdry=true;
 		std::pair<unsigned int, unsigned int> uv0=Bdry_Edges_Start[i];
 		HE_edge* edge_i=Edges[KKey(uv0)];
 		while(Continue_bdry){
 			
 			fprintf(outFile0, "%d \n", edge_i->vert->HE_vert_id);
+
+			fprintf(outFile1, "%g %g \n", current_x(edge_i->vert->HE_vert_id),current_y(edge_i->vert->HE_vert_id));
 
 			//CCW order, go in "prev" direction
 			edge_i=edge_i->prev;
@@ -569,6 +575,7 @@ void mesh_alg_2d::print_bdry_CCW(){
 			}
 		}
 		fclose(outFile0);
+		fclose(outFile1);
 	}
 
 }
@@ -610,7 +617,7 @@ void mesh_alg_2d::do_print_final_outputs(){
     }
 
 	char bug0[256];
-    sprintf(bug0,"%s/%s_%d",pm2d->file_name_prefix,pm2d->file_name_prefix,tria_iter_ct);
+    sprintf(bug0,"%s/%s_final",pm2d->file_name_prefix,pm2d->file_name_prefix);
 	
 	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
 	
@@ -2357,9 +2364,6 @@ printf("A\n");
 
 printf("B\n");
 
-	char bug00[256];
-	sprintf(bug00,"tria_bar_coords_debug0.txt");
-	FILE *outFile00 = fopen(bug00, "a");
 
 	//Obtain boundary edges connectivity: bdry HE prev and next
 	//Loop through all edges and obtain the bdry HE's
@@ -2368,14 +2372,9 @@ printf("B\n");
 			int eu=itr_e->second->eu;
 			int ev=itr_e->second->ev;
 			
-			fprintf(outFile00, "%g %g \n%g %g\n\n", current_x(eu),current_y(eu), current_x(ev),current_y(ev));
-
 		}
 		
 	}
-	fclose(outFile00);
-
-
 	//Fix single triangle holes:
 	//First, find vertices v with >1 (with 2) outgoing bdry edges (i.e. connecting to 4 bdry HE)
 	//Obtain boundary edges connectivity: bdry HE prev and next
@@ -2407,7 +2406,13 @@ printf("B\n");
 		bool have_deleted=false; //only delete one of the connecting triangles
 		int eu=eu_problematic[i];
 		if((signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()>2){
-			printf("ERROR: more than 4 bdry half edge connecting to a single bdry vertex!\n");
+			printf("ERROR: more than 4 bdry half edge connecting to a single bdry vertex %d (%g %g)!\n %d \n nei: %d (%g %g), %d(%g %g)\n", 
+				eu, current_x(eu),current_y(eu),
+				eu_bdry_connect[eu_bdry_ind[eu]].size(), 
+				eu_bdry_connect[eu_bdry_ind[eu]][0], current_x(eu_bdry_connect[eu_bdry_ind[eu]][0]),current_y(eu_bdry_connect[eu_bdry_ind[eu]][0]),
+				eu_bdry_connect[eu_bdry_ind[eu]][1], current_x(eu_bdry_connect[eu_bdry_ind[eu]][1]),current_y(eu_bdry_connect[eu_bdry_ind[eu]][1])
+
+				);
 			throw std::exception();
 		}
 		//delete a single triangle who two edges are bdry edges and connecting to the vertex
@@ -2595,10 +2600,6 @@ printf("B\n");
 printf("C\n");
 
 
-char bug0[256];
-sprintf(bug0,"tria_bar_coords_debug.txt");
-FILE *outFile0 = fopen(bug0, "a");
-	
 	//Obtain boundary edges connectivity: bdry HE prev and next
 	//Loop through all edges and obtain the bdry HE's
 	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
@@ -2607,12 +2608,8 @@ FILE *outFile0 = fopen(bug0, "a");
 			int ev=itr_e->second->ev;
 			Bdry_Edges[eu]=std::make_pair(ev,0); //0 signal not connected yet
 
-			fprintf(outFile0, "%g %g \n%g %g\n\n", current_x(eu),current_y(eu), current_x(ev),current_y(ev));
-
 		}
 	}
-
-fclose(outFile0);
 
 	//clear memory of intermediate variables
 	eu_bdry_connect.clear();
