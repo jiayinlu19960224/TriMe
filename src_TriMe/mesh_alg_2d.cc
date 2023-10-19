@@ -563,9 +563,7 @@ void mesh_alg_2d::print_bdry_CCW(){
 		std::pair<unsigned int, unsigned int> uv0=Bdry_Edges_Start[i];
 		HE_edge* edge_i=Edges[KKey(uv0)];
 		while(Continue_bdry){
-			
 			fprintf(outFile0, "%d \n", edge_i->vert->HE_vert_id);
-
 			fprintf(outFile1, "%g %g \n", current_x(edge_i->vert->HE_vert_id),current_y(edge_i->vert->HE_vert_id));
 
 			//CCW order, go in "prev" direction
@@ -2291,6 +2289,7 @@ printf("constructing HE\n");
 	delete [] Vertices;
 	Faces=new HE_face[tria_ct];
 	Vertices=new HE_vert[Ncurrent];
+	
 
 	//Make sure triangle vertices are CCW oriented
 	if(tria_order_ccw==false){sort_tria_vertex_ids_ccw();}
@@ -2340,11 +2339,7 @@ printf("A\n");
 				Vertices[tedges_i.first].edge=Edges[KKey(tedges_i)];
 				Vertices[tedges_i.first].HE_vert_id=tedges_i.first;
 			}
-			//HE vertice v
-			if(Vertices[tedges_i_pair.first].edge==NULL){
-				Vertices[tedges_i_pair.first].edge=Edges[KKey(tedges_i_pair)];
-				Vertices[tedges_i_pair.first].HE_vert_id=tedges_i_pair.first;
-			}
+
 			//HE triangle Face triai
 			if(i==0){
 				Faces[triai].edge=Edges[KKey(tedges_i)];
@@ -2364,17 +2359,6 @@ printf("A\n");
 
 printf("B\n");
 
-
-	//Obtain boundary edges connectivity: bdry HE prev and next
-	//Loop through all edges and obtain the bdry HE's
-	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
-		if(Edges[itr_e->first]->face==NULL){
-			int eu=itr_e->second->eu;
-			int ev=itr_e->second->ev;
-			
-		}
-		
-	}
 	//Fix single triangle holes:
 	//First, find vertices v with >1 (with 2) outgoing bdry edges (i.e. connecting to 4 bdry HE)
 	//Obtain boundary edges connectivity: bdry HE prev and next
@@ -2402,6 +2386,7 @@ printf("B\n");
 
 	//loop through the problematic vertices
 	for(int i=0;i<(signed int)eu_problematic.size();i++){
+printf("HERE O\n");
 		//Loop through the connecting incoming edges and the corresponding triangle
 		bool have_deleted=false; //only delete one of the connecting triangles
 		int eu=eu_problematic[i];
@@ -2418,6 +2403,7 @@ printf("B\n");
 		//delete a single triangle who two edges are bdry edges and connecting to the vertex
 		for(int ej=0;ej<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ej++){
 			if(have_deleted==false){
+printf("HERE A\n");
 				int ev=eu_bdry_connect[eu_bdry_ind[eu]][ej];
 				//check if the pair edge's Next is the pair edge of another (a)bdry edge and (b)connecting to vertec eu
 				if(Edges[KKey(eu,ev)]->pair->next->pair->face==NULL){
@@ -2466,6 +2452,8 @@ printf("B\n");
 		//Simply delete all triangles bounded by two bdry edges on one side connecting to the vertex
 		//PS. choose the side with less number of triangles
 		if(have_deleted==false){
+
+printf("HERE B\n");
 			int ej_chose=0;
 			int e_tria_ct_min=100;
 			for(int ejjj=0;ejjj<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ejjj++){
@@ -2607,7 +2595,6 @@ printf("C\n");
 			int eu=itr_e->second->eu;
 			int ev=itr_e->second->ev;
 			Bdry_Edges[eu]=std::make_pair(ev,0); //0 signal not connected yet
-
 		}
 	}
 

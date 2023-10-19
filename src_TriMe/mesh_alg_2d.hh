@@ -16,7 +16,8 @@ namespace voro {
      * @breif Edge struct for constructing half-edge (HE) data structure.
      */
     struct HE_edge
-    {
+    { 
+      HE_edge(): eu(-1),ev(-1),prev(0),next(0),pair(0),vert(0),face(0){};
       int eu;
       int ev;
       HE_edge* prev; //previous half-edge around the triangle face
@@ -31,6 +32,7 @@ namespace voro {
      */
     struct HE_vert
     {
+      HE_vert(): HE_vert_id(-1),edge(0){};
       int HE_vert_id; 
       HE_edge* edge; //One of the HE emanating from the vertex
     };
@@ -40,6 +42,7 @@ namespace voro {
      */
     struct HE_face
     {
+      HE_face():HE_face_id(-1),edge(0){};
       int HE_face_id;
       HE_edge* edge; //One of the HE bordering the triangle face.
     };
