@@ -14,33 +14,26 @@ objs=basic_calculation.o parallel_meshing_2d.o shape_2d.o custom_shape_2d.o \
 # Corresponding source code files
 src=$(patsubst %.o,%.cc,$(objs))
 
-# List of executables
-execs= parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point
-
 # Makefile rules
-all:
-	$(MAKE) -C $(v2d)
-	$(MAKE) executables
-
-executables: $(execs)
-
+all: libtrime++.a 
+	
 depend: $(src)
 	$(cxx) $(iflags) -MM $(src) >Makefile.dep
 
 -include Makefile.dep
 
-parallel_meshing_2d_main: parallel_meshing_2d_main.cc $(objs)
-	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++
-
-parallel_meshing_2d_main_fixed_point: parallel_meshing_2d_main_fixed_point.cc $(objs)
-	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++
-
+libtrime++.a: $(objs)
+	rm -f libtrime++.a
+	ar rs libtrime++.a $^
 
 %.o:%.cc
 	$(cxx) $(cflags) $(iflags) -c $<
 
 
-clean:
-	rm -f $(execs)
+help: Doxyfile $(SOURCE)
+	doxygen Doxyfile
 
-.PHONY: all clean executables depend
+clean:
+	rm -f $(objs) libtrime++.a
+
+.PHONY: all help execs depend
