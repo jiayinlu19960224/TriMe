@@ -17,7 +17,7 @@ src=$(patsubst %.o,%.cc,$(objs))
 # Makefile rules
 all: libtrime++.a 
 	
-depend: $(src)
+depend: 
 	$(cxx) $(iflags) -MM $(src) >Makefile.dep
 
 -include Makefile.dep

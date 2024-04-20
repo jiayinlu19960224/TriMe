@@ -20,7 +20,7 @@ all:
 
 executables: $(execs)
 
-depend: $(src)
+depend: 
 	$(cxx) $(iflags) -MM $(src) >Makefile.dep
 
 -include Makefile.dep
