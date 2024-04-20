@@ -3,11 +3,11 @@
 <span style="font-variant:small-caps;">TriMe++</span>: a **multi-threaded** software library for **fast** generation of **large-scale**, **adaptive** 2D triangle meshes for **intricate 
 geometric shapes** using Delaunay triangulation. 
 
-By Jiayin Lu [^1][^2], Chris H. Rycroft [^2]
+By Jiayin Lu [^a][^b], Chris H. Rycroft [^a]
 
-[^1]: University of Wisconsin-Madison
+[^a]: University of Wisconsin-Madison
 
-[^2]: Harvard University
+[^b]: Harvard University
 
 Please consider [citing our paper](#citation-and-paper).
 
@@ -78,7 +78,7 @@ enabling efficient refinement of sizing and density values in areas with complex
 In the meshing procedure, the <code>parallel_meshing_2d</code> class iteratively improves point positions in the mesh. 
 In each meshing iteration, we employ the multi-threaded <span style="font-variant:small-caps;">Voro++</span> to facilitate fast and efficient parallel computation 
 in generating the Delaunay triangulation of the points. Users have the option to select from three meshing 
-algorithms, the DistMesh algorithm in the <code>mesh_alg_2d_d</code> class, the Centroidal Voronoi Diagram meshing 
+algorithms, the DistMesh algorithm in the <code>mesh_alg_2d_dm</code> class, the Centroidal Voronoi Diagram meshing 
 algorithm in the <code>mesh_alg_2d_cvd</code> class, and a hybrid method of the two in the <code>mesh_alg_2d_hybrid</code> class. 
 
 Related programs
