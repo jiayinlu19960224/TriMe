@@ -3,11 +3,11 @@
 <span style="font-variant:small-caps;">TriMe++</span>: a **multi-threaded** software library for **fast** generation of **large-scale**, **adaptive** 2D triangle meshes for **intricate 
 geometric shapes** using Delaunay triangulation. 
 
-By Jiayin Lu (a,b), Chris H. Rycroft (a)
+By Jiayin Lu [^1][^2], Chris H. Rycroft [^2]
 
-(a) Harvard University
+[^1]: University of Wisconsin-Madison
 
-(b) University of Wisconsin-Madison
+[^2]: Harvard University
 
 Please consider [citing our paper](#citation-and-paper).
 
@@ -99,7 +99,7 @@ publications:
 >
 >Geometry meshing gives discrete representation of continuous geometry shapes. It has important applications in computer graphics and in scientific computing, especially for numerical simlations using the finite element method. In some large-scale simulations, high-resolution geometry meshes using hundreds of thousands of points may be needed. In this paper, we present <span style="font-variant:small-caps;">TriMe++</span>, a multi-threaded software library designed for generating adaptive 2D meshes for intricate geometric shapes using Delaunay triangulation. Multi-threaded parallel computing is implemented throughout the meshing procedure, making it especially suitable for fast generation of large-scale meshes. Three iterative meshing algorithms are provided to users: DistMesh, Centroidal Voronoi Diagram meshing, and a hybrid method of the two. We test the performance of <span style="font-variant:small-caps;">TriMe++</span>. We compare the three meshing methods, and show that the hybrid method has the advantages of the other two, while avoiding the disadvantages. We demonstrate that the software library achieves significant speed up in time with parallel computing when generating a large-scale mesh of $10^6$ points. We also show that <span style="font-variant:small-caps;">TriMe++</span> is able to handle extremely complicated geometry shapes and generates adaptive meshes of high quality.
 
-Further improvements of <span style="font-variant:small-caps;">TriMe++</span> will be made and documented in [Code updates](#code-updates). 
+Further improvements of <span style="font-variant:small-caps;">TriMe++</span> will be made and documented in the [Code updates](#code-updates) section. 
 
 
 Quick start
@@ -157,8 +157,7 @@ contract number DE-AC02-05CH11231.
 References
 =============================================
 [1] DistMesh 
- - P.-O. Persson, G. Strang, A simple mesh generator in matlab, SIAM Review 46 (2) (June 2004) 329–345, 
-   http://persson.berkeley.edu/distmesh/.
+ - P.-O. Persson, G. Strang, A simple mesh generator in matlab, SIAM Review 46 (2) (June 2004) 329–345. [[website]](http://persson.berkeley.edu/distmesh/)
 
  - P.-O. Persson, Mesh generation for implicit geometries, Ph.D. thesis, Massachusetts Institute of 
    Technology (2005).
@@ -172,13 +171,13 @@ References
 
 [3] Multi-threaded <span style="font-variant:small-caps;">Voro++</span>
 - Chris H. Rycroft, "<span style="font-variant:small-caps;">Voro++</span>: A three-dimensional Voronoi cell library in C++",
-  Chaos 19, 041111 (2009).
+  Chaos 19, 041111 (2009). [[website]](https://math.lbl.gov/voro++/)
 
 - Lu, Jiayin, Lazar, Emanuel, and Rycroft, Chris. (2023). "An extension to <span style="font-variant:small-caps;">Voro++</span> for 
-  multithreaded computation of Voronoi cells". Computer Physics Communications. 291. 108832 (2023). 
+  multithreaded computation of Voronoi cells". Computer Physics Communications. 291. 108832 (2023). [[website]](https://github.com/chr1shr/voro/tree/dev)
 
 [4] OpenMP
  - L. Dagum, R. Menon, OpenMP: an industry standard API for shared-memory pro- gramming, IEEE Computational 
-   Science and Engineering 5 (1) (1998) 46–55. doi: 10.1109/99.660313. https://www.openmp.org.
+   Science and Engineering 5 (1) (1998) 46–55. doi: 10.1109/99.660313. [[website]](https://www.openmp.org)
 
 
