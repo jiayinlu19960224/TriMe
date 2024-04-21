@@ -65,13 +65,21 @@ Directory structure
 -------
 
 <code>TriMe</code>: Root-directory
+> **Code**
+>
+><code>config.mk</code>: File specifying <span style="font-variant:small-caps;">C++</span> compilation and installation settings
+>
 ><code>src_voro</code>: Sub-directory with source code files of the multi-threaded <span style="font-variant:small-caps;">Voro++</span> program
 >
 ><code>src_TriMe</code>: Sub-directory with source code files of the <span style="font-variant:small-caps;">TriMe++</span> program
 >
 ><code>Examples</code>: Sub-directory with example files of meshing on geometry shapes making use of the library
 >
-><code>config.mk</code>: File specifying <span style="font-variant:small-caps;">C++</span> compilation and installation settings
+> **Documentation**
+>
+><code>README.md</code>: Documentation and quick start guide
+>
+><code>docs</code>: Sub-directory with figures for the README.md file
 
 
 Method
