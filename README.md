@@ -18,7 +18,7 @@ Table of contents
 ================================================
 1. [Overview](#overview)
 
-      1.1. [Directory Contents](#directory-contents)
+      1.1. [Directory structure](#directory-structure)
 
       1.2. [Method](#method)
 
@@ -56,14 +56,17 @@ Multi-threaded parallel
 computing is implemented throughout the meshing procedure via OpenMP [[4]](#references). 
 
 
-Directory Contents
+Directory structure
 -------
 
-> <code>src_voro</code>: directory with source code files of the multi-threaded <span style="font-variant:small-caps;">Voro++</span> program
-
-> <code>src_TriMe</code>: directory with source code files of the <span style="font-variant:small-caps;">TriMe++</span> program
-
-> <code>Examples</code>: directory with example files of meshing on geometry shapes making use of the library
+<code>TriMe</code>: Root-directory
+><code>src_voro</code>: Sub-directory with source code files of the multi-threaded <span style="font-variant:small-caps;">Voro++</span> program
+>
+><code>src_TriMe</code>: Sub-directory with source code files of the <span style="font-variant:small-caps;">TriMe++</span> program
+>
+><code>Examples</code>: Sub-directory with example files of meshing on geometry shapes making use of the library
+>
+><code>config.mk</code>: File specifying <span style="font-variant:small-caps;">C++</span> compilation and installation settings
 
 
 Method
