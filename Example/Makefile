@@ -10,7 +10,7 @@ lflags=-L$(v2d) -L$(tm2d)
 src=$(patsubst %.o,%.cc,$(objs))
 
 # List of executables
-execs= parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point parallel_meshing_2d_main_mapping
+execs= custom_poker_meshing parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point parallel_meshing_2d_main_mapping
 
 # Makefile rules
 all:
@@ -24,6 +24,9 @@ depend:
 	$(cxx) $(iflags) -MM $(src) >Makefile.dep
 
 -include Makefile.dep
+
+custom_poker_meshing: custom_poker_meshing.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
 parallel_meshing_2d_main: parallel_meshing_2d_main.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++

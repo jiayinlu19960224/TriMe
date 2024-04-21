@@ -5,6 +5,8 @@ geometric shapes** using Delaunay triangulation.
 
 By Jiayin Lu [^a][^b], Chris H. Rycroft [^a]
 
+![header plot](/docs/github_header_plot.jpg)
+
 [^a]: University of Wisconsin-Madison
 
 [^b]: Harvard University
@@ -13,6 +15,7 @@ Please consider [citing our paper](#citation-and-paper).
 
 I am very interested to hear from users of the software, so if you find this
 useful or have any questions, please email me at jiayinlu19960224work@gmail.com.
+
 
 Table of contents
 ================================================
@@ -26,8 +29,6 @@ Table of contents
 
       1.4. [Citation and paper](#citation-and-paper)
 
-1. [Performance](#performance)
-
 1. [Quick start](#quick-start)
 
       3.1. [Compilation](#compilation---linux--mac-os--windows-with-cygwin)
@@ -37,6 +38,8 @@ Table of contents
       3.3. [Understand the output files](#understanding-the-output-files)
 
       3.4. [Customization](#customization)
+
+1. [Performance](#performance)
 
 1. [Code updates](#updates)
 
@@ -107,10 +110,6 @@ publications:
 Further improvements of <span style="font-variant:small-caps;">TriMe++</span> will be made and documented in the [Code updates](#code-updates) section. 
 
 
-Performance
-================================================
-
-
 
 Quick start
 ==================================================
@@ -141,6 +140,8 @@ Customization
 ---------------
 
 
+Performance
+================================================
 
 
 Code updates
