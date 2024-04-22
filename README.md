@@ -181,53 +181,78 @@ container_2d con(0.0,1.0,0.0,1.0,cnx,cny,false,false,16,num_t);
 ```
 
 ### Built-in 2D primitive shapes
+
+A few built-in primitive shapes are provided in the library. They are rectangle, circle and triangle: 
+><code>shape_2d_rectangle(container_2d &con, int num_t, double x0, double x1, double y0, double y1)</code>: A rectangular shape defined on the domain $[x0,x1]\times[y0,y1]$.
+>
+><code>shape_2d_circle(container_2d &con, int num_t, double r, double x0, double y0)</code>: A circular shape with radius $r$ centered at $(x0,y0)$. 
+>
+><code>shape_2d_triangle(container_2d &con, int num_t, double x0, double y0, double x1, double y1, double x2, double y2)</code>: A triangle defined by three vertices, $(x0,y0)$, $(x1,y1)$ and $(x2,y2)$.
+
+In the syntax of the primitive shapes creation above, we need to pass in the <span style="font-variant:small-caps;">Voro++</span> <code>container_2d</code> object created, and pass in the number of parallel threads to use for calculating the Voronoi diagram in the Delaunay triangulation. 
+
+In the following code, we create a triangle shape defined by the three vertices $(0.1,0.1)$,$(0.3,0.8)$ and $(0.8,0.5)$. The commented code below also provides examples for creating a circle and a rectangle primitive. 
 ```c++
 //-------------------2.Create shape------------------------
-  //shape_2d_circle shp(con,num_t,0.3,0.5,0.5);
-  //shape_2d_rectangle shp(con,num_t,0.1, 0.9, 0.3, 0.7);
-  shape_2d_triangle shp(con,num_t,0.1,0.1,0.3,0.8,0.8,0.5);
-  
+//A circle with radius 0.3 centered at (0.5,0.5)
+//shape_2d_circle shp(con,num_t,0.3,0.5,0.5);
+
+//A rectangle on domain [0.1,0.9]x[0.3,0.7]
+//shape_2d_rectangle shp(con,num_t,0.1, 0.9, 0.3, 0.7);
+
+//A triangle defined by the three vertices (0.1,0.1),(0.3,0.8) and (0.8,0.5)
+shape_2d_triangle shp(con,num_t,0.1,0.1,0.3,0.8,0.8,0.5);
 ```
+The plot here shows three example meshes using the different primitive shapes and adaptivity paramemters. 
 ![primitives meshes plot](/docs/primitives_meshes_plot.jpg)
 
 
+### Meshing
+Next, we create the adaptive sizing field for meshing, based on the shape defined and the adaptivity parameter <code>K</code>. 
 ```c++
-//-------------------3.Create sizing field------------------
-  sizing_2d_automatic size_field(&shp,K);
-
-//------------------4.Create pm2d----------------------
-  srand(10);//set seed for rand() so that pt_init are the same across different num_t_mesh
-  parallel_meshing_2d pm2d(&con, &shp, &size_field, num_t, output_interval, case_name_base);
-  pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
-
-//======================Parallel meshing=====================
-  
-if(method_ind==0){
-      mesh_alg_2d_dm mesh_method(&pm2d);
-      mesh_method.change_number_thread(num_t);
-      pm2d.meshing(&mesh_method); 
-}
-else if(method_ind==1){
-      mesh_alg_2d_cvd mesh_method(&pm2d);
-      mesh_method.change_number_thread(num_t);
-      pm2d.meshing(&mesh_method); 
-}
-else if(method_ind==2){
-      mesh_alg_2d_hybrid mesh_method(&pm2d);
-      mesh_method.change_number_thread(num_t);
-      pm2d.meshing(&mesh_method); 
-}
-
-return 0;   
+//-------------------3.Create adaptive sizing field------------------
+sizing_2d_automatic size_field(&shp,K);
 ```
 
-### Shape primitives
-A few built-in primitive shapes are provided in the library. They are
->
->
->
->
+We then create the parallel_meshing_2d object for the meshing procedure later. It takes in as parameters: 
+- the <span style="font-variant:small-caps;">Voro++</span> <code>container_2d</code> object for Delaunay triangulation, 
+- the <code>shape_2d</code> object that defines the geometry to mesh, 
+- the adaptive sizing field <code>size_field</code> that defines the relative triangle element sizes in the mesh, 
+- the number of parallel threads to use in the meshing algorithm <code>num_t</code>, 
+- the frequency of file outputs <code>output_interval</code>,
+- the output file names prefix <code>case_name_base</code>.
+```c++
+//------------------4.Create parallel_meshing_2d object----------------------
+//Create the pm2d object
+parallel_meshing_2d pm2d(&con, &shp, &size_field, num_t, output_interval, case_name_base);
+```
 
+We then initialize meshing points. 
+```c++
+//Optional: set seed for rand() for generating randome points in pt_init
+srand(10);
+//Initialize meshing points
+pm2d.pt_init(Ntotal);
+```
+
+Afterwards, we start the iterative meshing procedure, depending on the meshing algorithm chosen. 
+For a chosen meshing algorithm, the code first creates an object <code>mesh_method</code> that implements the meshing algorithm. It reads in the <code>pm2d</code> object to obtain all the information of meshing specifications, such as the shape, adaptivity and number of threads to use. 
+The <code>pm2d</code> then calls <code>pm2d.meshing(&mesh_method)</code> to do the iterative meshing using that chosen method. 
+```c++
+//======================Parallel meshing=====================
+if(method_ind==0){ //DistMesh
+      mesh_alg_2d_dm mesh_method(&pm2d);
+      pm2d.meshing(&mesh_method); 
+}
+else if(method_ind==1){ //CVD
+      mesh_alg_2d_cvd mesh_method(&pm2d);
+      pm2d.meshing(&mesh_method); 
+}
+else if(method_ind==2){ //Hybrid
+      mesh_alg_2d_hybrid mesh_method(&pm2d);
+      pm2d.meshing(&mesh_method); 
+}
+```
 
 
 Understand the output files
