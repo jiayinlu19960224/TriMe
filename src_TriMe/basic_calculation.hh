@@ -137,6 +137,25 @@ namespace voro {
 		}
 
 		/**
+		 * @brief Calculates the area of a triangle based on its three vertex positions
+		 * @param x0 X-coordinate of the first vertex.
+		 * @param y0 Y-coordinate of the first vertex.
+		 * @param x1 X-coordinate of the second vertex.
+		 * @param y1 Y-coordinate of the second vertex.
+		 * @param x2 X-coordinate of the third vertex.
+		 * @param y2 Y-coordinate of the third vertex.
+		 * @return The area of the triangle.
+		 */
+		double area_tria(double x0, double y0, double x1, double y1, double x2, double y2){
+			double a=d_points(x0,y0,x1,y1);
+			double b=d_points(x1,y1,x2,y2);
+			double c=d_points(x0,y0,x2,y2);
+			double s=s_tria(a,b,c);
+			double area=area_tria(a,b,c,s);
+			return area;
+		}
+
+		/**
 		 * @brief Calculates the aspect ratio of a triangle.
 		 * @param a Length of the first edge.
 		 * @param b Length of the second edge.
@@ -326,7 +345,18 @@ namespace voro {
 		 * @return The unsigned distance from the point to the line segment.
 		 */
         double f_line_seg(double x, double y, double x0, double y0, double x1, double y1, double &closestx, double &closesty, int &status);
-	
+		
+		/**
+		 * @brief Calculates the unsigned distance from a point (x, y) to a line segment defined by two points (x0, y0) and (x1, y1).
+		 * @param x X-coordinate of the point.
+		 * @param y Y-coordinate of the point.
+		 * @param x0 X-coordinate of the first endpoint of the line segment.
+		 * @param y0 Y-coordinate of the first endpoint of the line segment.
+		 * @param x1 X-coordinate of the second endpoint of the line segment.
+		 * @param y1 Y-coordinate of the second endpoint of the line segment.
+		 * @return The unsigned distance from the point to the line segment.
+		 */
+		double f_line_seg(double x, double y, double x0, double y0, double x1, double y1);
 		
 		/**
 		 * @brief Projects a point (xx1, yy1) onto the geometry boundary using the provided functions.

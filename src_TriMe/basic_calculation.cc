@@ -73,6 +73,57 @@ double basic_calculation_2d::f_line_seg(double x, double y,
     }
 }
 
+/**
+ * @brief Calculates the unsigned distance from a point to a line segment.
+ *
+ * This function calculates the distance from a point (x, y) to a line segment defined by
+ * two endpoints (x0, y0) and (x1, y1).
+ *
+ * @param x The x-coordinate of the point.
+ * @param y The y-coordinate of the point.
+ * @param x0 The x-coordinate of the first endpoint of the line segment.
+ * @param y0 The y-coordinate of the first endpoint of the line segment.
+ * @param x1 The x-coordinate of the second endpoint of the line segment.
+ * @param y1 The y-coordinate of the second endpoint of the line segment.
+ * @return The unsigned distance from the point to the line segment.
+ */
+double basic_calculation_2d::f_line_seg(double x, double y, 
+    double x0, double y0, double x1, double y1){
+
+    double d; 
+    
+    //the line segment vector v=p1-p0
+    double vx=x1-x0;
+    double vy=y1-y0;
+    //the Point p to p0 vector w=p-p0
+    double wx=x-x0;
+    double wy=y-y0;
+
+    //c1=w.dot(v)
+    double c1=wx*vx+wy*vy;
+    if(c1<=0){ //before p0
+        d=d_points(x, y, x0, y0);
+        return d;
+    }
+    else{
+        //c2=v.dot(v)
+        double c2=vx*vx+vy*vy;
+        
+        if(c2<=c1){ //after p1
+            d=d_points(x, y, x1, y1);
+            return d;
+        }
+        else{
+            double b=c1/c2;
+            //closest (perpendicular) point on line segment to point p
+            double p_lx=x0+b*vx;
+            double p_ly=y0+b*vy;
+            d=d_points(x, y, p_lx, p_ly);
+            return d;
+        }
+    }
+}
+
 
 /**
  * @brief Projects a point onto the geometry boundary.

@@ -380,110 +380,80 @@ namespace voro {
     
     
     /**
-     * @brief The shape_2d_ellipse class represents a 2D ellipse shape.
+     * @brief The shape_2d_triangle class represents a 2D triangle shape.
      *
      * This class inherits from the base class shape_2d and implements the signed distance function (SDF)
-     * for the ellipse shape. The SDF returns the signed distance from a given point (x, y) to the ellipse,
-     * with the sign indicating whether the point is inside or outside the ellipse.
+     * for the triangle shape. The SDF returns the signed distance from a given point (x, y) to the triangle,
+     * with the sign indicating whether the point is inside or outside the triangle.
      */
-    class shape_2d_ellipse : public shape_2d{
+    class shape_2d_triangle : public shape_2d {
      public:
-         const double x0; /**< The x-coordinate of the center of the ellipse. */
-         const double y0; /**< The y-coordinate of the center of the ellipse. */
-         const double a;  /**< The horizontal radius (semi-major axis) of the ellipse. */
-         const double b;  /**< The vertical radius (semi-minor axis) of the ellipse. */
-
+         const double x0; /**< The x-coordinate of vertex 0 of the triangle. */
+         const double y0; /**< The y-coordinate of vertex 0 of the triangle. */
+        const double x1; /**< The x-coordinate of vertex 1 of the triangle. */
+         const double y1; /**< The y-coordinate of vertex 1 of the triangle. */
+        const double x2; /**< The x-coordinate of vertex 2 of the triangle. */
+         const double y2; /**< The y-coordinate of vertex 2 of the triangle. */
+         
          
          /**
-         * @brief Constructor for the shape_2d_ellipse class: (x-x0)^2/a^2 +(y-y0)^2/b^2 = 1.0.
-         *
-         * @param con_ The container_2d object.
-         * @param num_t_ Number of parallel threads.
-         * @param x0_ The x-coordinate of the center of the ellipse.
-         * @param y0_ The y-coordinate of the center of the ellipse.
-         * @param a_ The horizontal radius (semi-major axis) of the ellipse.
-         * @param b_ The vertical radius (semi-minor axis) of the ellipse.
-         */
-         shape_2d_ellipse(container_2d &con_, int num_t_, double x0_, double y0_, double a_, double b_)
+          * @brief Constructor for the shape_2d_triangle class.
+          *
+          * @param con_ The container_2d object.
+          * @param num_t_ Number of parallel threads.
+          * @param x0_ The x-coordinate of vertex 0 of the triangle.
+          * @param y0_ The y-coordinate of vertex 0 of the triangle.
+          * @param x1_ The x-coordinate of vertex 1 of the triangle.
+          * @param y1_ The y-coordinate of vertex 1 of the triangle.
+          * @param x2_ The x-coordinate of vertex 2 of the triangle.
+          * @param y2_ The y-coordinate of vertex 2 of the triangle.
+          */
+         shape_2d_triangle(container_2d &con_, int num_t_, double x0_, double y0_, double x1_, double y1_, double x2_, double y2_)
             :shape_2d(con_,num_t_),
-             x0(x0_), y0(y0_), a(a_), b(b_) 
+             x0(x0_), y0(y0_), x1(x1_), y1(y1_), x2(x2_), y2(y2_) 
              {
                 get_geometryGrid();
              }
 
         /**
-          * Destructor for shape_2d_ellipse.
+          * Destructor for shape_2d_triangle.
           * Frees any resources allocated by the object.
           */
-         ~shape_2d_ellipse(){};
-
+         ~shape_2d_triangle(){};
+         
          /**
-         * @brief Calculates the signed distance from a point (x, y) to the ellipse.
-         *
-         * The signed distance is the distance from the point to the ellipse's boundary,
-         * with the sign indicating whether the point is inside or outside the ellipse.
-         *
-         * @param x The x-coordinate of the point.
-         * @param y The y-coordinate of the point.
-         * @return The signed distance from the point to the ellipse.
-         */
-         double sdf(double x, double y){
-            double d = 1.0/sqr(a)*sqr(x-x0)+1.0/sqr(b)*sqr(y-y0)-1.0;
-            return d;
-         }
-    };
-
-    /**
-     * @brief The shape_2d_superellipse class represents a 2D superellipse shape.
-     *
-     * This class inherits from the base class shape_2d and implements the signed distance function (SDF)
-     * for the superellipse shape. The SDF returns the signed distance from a given point (x, y) to the superellipse,
-     * with the sign indicating whether the point is inside or outside the superellipse.
-     */
-    class shape_2d_superellipse : public shape_2d{
-     public: 
-         const double r; /**< The radius of the superellipse. */
-         const double x0; /**< The x-coordinate of the center of the superellipse. */
-         const double y0; /**< The y-coordinate of the center of the superellipse. */
-
-        /**
-         * @brief Constructor for the shape_2d_superellipse class.
-         *
-         * @param con_ The container_2d object.
-         * @param num_t_ Number of parallel threads.
-         * @param r_ The radius of the superellipse.
-         * @param x0_ The x-coordinate of the center of the superellipse.
-         * @param y0_ The y-coordinate of the center of the superellipse.
-         */
-        shape_2d_superellipse(container_2d &con_, int num_t_, double r_, double x0_, double y0_)
-        : shape_2d(con_,num_t_),
-          r(r_),x0(x0_),y0(y0_) 
-          {
-            get_geometryGrid();
-          }
-
-        /**
-          * Destructor for shape_2d_superellipse.
-          * Frees any resources allocated by the object.
+          * @brief Calculates the signed distance from a point (x, y) to the triangle.
+          *
+          * The signed distance is the distance from the point to the triangle's boundary,
+          * with the sign indicating whether the point is inside or outside the triangle.
+          *
+          * @param x The x-coordinate of the point.
+          * @param y The y-coordinate of the point.
+          * @return The signed distance from the point to the triangle.
           */
-        ~shape_2d_superellipse(){};
-
-        /**
-         * @brief Calculates the signed distance from a point (x, y) to the superellipse.
-         *
-         * The signed distance is the distance from the point to the superellipse's boundary,
-         * with the sign indicating whether the point is inside or outside the superellipse.
-         *
-         * @param x The x-coordinate of the point.
-         * @param y The y-coordinate of the point.
-         * @return The signed distance from the point to the superellipse.
-         */
          double sdf(double x, double y){
-            double d = sqrt(sqrt(sqr(x-x0)*sqr(x-x0)+sqr(y-y0)*sqr(y-y0)))-r;
+            //Find the shortest absolute distance
+            double d01=f_line_seg(x, y, x0, y0, x1, y1);
+            double d02=f_line_seg(x, y, x0, y0, x2, y2);
+            double d12=f_line_seg(x, y, x1, y1, x2, y2);
+            double d=min(d01, min(d02,d12));
+
+            //Decide whether the point is inside or outside the triangle
+            //By calculating the areas of the triangles: 0-1-2, Pt-0-1, Pt-0-2, Pt-1-2
+            //If the sum of areas of triangles incident to pt equals to the full triangle 0-1-2 area, 
+            //Then point is inside of triangle. 
+            double AAA=area_tria(x0, y0, x1, y1, x2, y2);
+            double Ap01=area_tria(x0, y0, x1, y1, x, y);
+            double Ap02=area_tria(x0, y0, x2, y2, x, y);
+            double Ap12=area_tria(x2, y2, x1, y1, x, y);
+            double sumAp=Ap01+Ap02+Ap12;
+
+            if(sumAp>AAA-1e-13 && sumAp<AAA+1e-13){
+                d=-d;
+            }
             return d;
          }
     };
-    
     
     
     /**

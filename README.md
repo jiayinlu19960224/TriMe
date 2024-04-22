@@ -133,11 +133,100 @@ To begin, the user should review the file "config.mk" in the top level
 directory, to make sure that the compilation and installation settings are
 appropriate for their system. 
 
-Typing "make" in the Example directory will then compile the static
+Then type "make" in the command line in the Example directory will compile the static
 library and examples.
 
 Run the examples
 ---------------
+
+In the <code>/Examples</code> directory, let's first look at the most basic example file, <code>primitive_shape_meshing.cc</code>. 
+
+### Set up
+On the top, use <code>#include "parallel_meshing_2d.hh"</code> to import the <span style="font-variant:small-caps;">TriMe++</span> code. 
+
+In the main code, these few lines at the beginning of the code specify:
+- <code>num_t</code>: The number of parallel threads to use.
+- <code>method_ind</code>: The meshing algorithm to use. $0$ DistMesh; $1$ CVD; $2$ Hybrid.
+- <code>Ntotal</code>: The total number of meshing points.
+- <code>K</code>: Adaptivity of mesh. $0$ Uniform; $>1$ Adaptive; Larger <code>K</code> increases the adaptivity of mesh.
+- <code>output_interval</code>: File output frequency. $0$ No output; $-1$ Only output at termination; any positive integer, e.g. $10$, represents outputting every $10$ triangulations during the meshig procedure. 
+
+Here, we are using $4$ parallel threads, the hybrid meshing method, $5000$ meshing vertices, with an adaptivity $K=0.1$, and output the meshing data at termination. 
+```c++
+//Specify number of parallel threads
+int num_t=4;
+//Method index, 0 Distmesh; 1 CVD; 2 Hybrid
+int method_ind=2; 
+//Number of vertices in the mesh
+int Ntotal=5000; 
+//0:uniform sizing field
+double K=0.1; 
+//File output frequency. 0 no output; -1 output at termination; 10, every 10 triangulations output
+int output_interval=-1; 
+```
+
+The next few lines create a directory <code>/Examples/case_name_base</code> to store the output files. 
+```c++
+//File output name prefix
+char case_name_base[256];
+sprintf(case_name_base,"triangle_mesh_N_%d_K_%g",Ntotal,K);
+//Create directory to store file outputs
+mkdir(case_name_base,S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
+```
+
+```c++
+//------------------1.Create container----------------------
+int cnx=sqrt(Ntotal/3.3); int cny=cnx;
+container_2d con(0.0,1.0,0.0,1.0,cnx,cny,false,false,16,num_t);
+```
+
+```c++
+//-------------------2.Create shape------------------------
+  //shape_2d_circle shp(con,num_t,0.3,0.5,0.5);
+  //shape_2d_rectangle shp(con,num_t,0.1, 0.9, 0.3, 0.7);
+  shape_2d_triangle shp(con,num_t,0.1,0.1,0.3,0.8,0.8,0.5);
+  
+```
+![primitives meshes plot](/docs/primitives_meshes_plot.jpg)
+
+
+```c++
+//-------------------3.Create sizing field------------------
+  sizing_2d_automatic size_field(&shp,K);
+
+//------------------4.Create pm2d----------------------
+  srand(10);//set seed for rand() so that pt_init are the same across different num_t_mesh
+  parallel_meshing_2d pm2d(&con, &shp, &size_field, num_t, output_interval, case_name_base);
+  pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
+
+//======================Parallel meshing=====================
+  
+if(method_ind==0){
+      mesh_alg_2d_dm mesh_method(&pm2d);
+      mesh_method.change_number_thread(num_t);
+      pm2d.meshing(&mesh_method); 
+}
+else if(method_ind==1){
+      mesh_alg_2d_cvd mesh_method(&pm2d);
+      mesh_method.change_number_thread(num_t);
+      pm2d.meshing(&mesh_method); 
+}
+else if(method_ind==2){
+      mesh_alg_2d_hybrid mesh_method(&pm2d);
+      mesh_method.change_number_thread(num_t);
+      pm2d.meshing(&mesh_method); 
+}
+
+return 0;   
+```
+
+### Shape primitives
+A few built-in primitive shapes are provided in the library. They are
+>
+>
+>
+>
+
 
 
 Understand the output files
