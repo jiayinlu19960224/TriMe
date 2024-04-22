@@ -33,9 +33,9 @@ Table of contents
 
       3.1. [Compilation](#compilation---linux--mac-os--windows-with-cygwin)
       
-      3.2. [Run the examples](#running-the-examples)
+      3.2. [Run the examples](#run-the-examples)
 
-      3.3. [Understand the output files](#understanding-the-output-files)
+      3.3. [Understand the output files](#understand-the-output-files)
 
       3.4. [Customization](#customization)
 
