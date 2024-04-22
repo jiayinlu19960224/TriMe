@@ -37,7 +37,7 @@ Table of contents
 
       3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries
 
-      3.4. [Customization](#customization): shape boolean operations, custom shape input from contour line segments, shape from binary image
+      3.4. [Customization](#customization): user-defined sizing field, shape boolean operations, custom shape from user-defined signed distance function, custom shape from contour line segments, custom shape from binary image
 
 1. [Performance](#performance)
 
@@ -265,19 +265,17 @@ Understand the output files
 
 Customization
 ---------------
+### user-defined sizing field
 
-### User defined signed distance field
+### shape boolean operations
 
-### User defined sizing field
+### custom shape from user-defined signed distance function
 
+### custom shape from contour line segments
 
-### Shape boolean operations
-
-
-### Custom shape input from contour line segments
+### custom shape from binary image
 
 
-### Shape from binary image
 
 
 
