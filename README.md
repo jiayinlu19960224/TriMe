@@ -33,11 +33,11 @@ Table of contents
 
       3.1. [Compilation](#compilation---linux--mac-os--windows-with-cygwin)
       
-      3.2. [Run the examples](#run-the-examples)
+      3.2. [Run a basic example](#run-a-basic-example): built-in shape primitives, mesh adaptivity control, parallel threads control
 
       3.3. [Understand the output files](#understand-the-output-files)
 
-      3.4. [Customization](#customization)
+      3.4. [Customization](#customization): shape boolean operations, custom shape input from contour line segments, shape from binary image
 
 1. [Performance](#performance)
 
@@ -136,7 +136,7 @@ appropriate for their system.
 Then type <code>make</code> in the command line in the Example directory will compile the static
 library and examples. And we now see executable example files in the directory. 
 
-Run the examples
+Run a basic example
 ---------------
 
 In the <code>/Examples</code> directory, let's first look at the most basic example file, <code>primitive_shape_meshing.cc</code>. This file does meshing on built-in primitive shapes provided by the library: rectangle, circles, triangles. 
