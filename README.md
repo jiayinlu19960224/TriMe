@@ -133,13 +133,17 @@ To begin, the user should review the file "config.mk" in the top level
 directory, to make sure that the compilation and installation settings are
 appropriate for their system. 
 
-Then type "make" in the command line in the Example directory will compile the static
-library and examples.
+Then type <code>make</code> in the command line in the Example directory will compile the static
+library and examples. And we now see executable example files in the directory. 
 
 Run the examples
 ---------------
 
-In the <code>/Examples</code> directory, let's first look at the most basic example file, <code>primitive_shape_meshing.cc</code>. 
+In the <code>/Examples</code> directory, let's first look at the most basic example file, <code>primitive_shape_meshing.cc</code>. This file does meshing on built-in primitive shapes provided by the library: rectangle, circles, triangles. 
+
+To run its meshing, we simply need to run the corresponding executable file by typing <code>./primitive_shape_meshing</code> in the command line. 
+
+Let's now look at the code in detail in <code>primitive_shape_meshing.cc</code>. 
 
 ### Set up
 On the top, use <code>#include "parallel_meshing_2d.hh"</code> to import the <span style="font-variant:small-caps;">TriMe++</span> code. 
