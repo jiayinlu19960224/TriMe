@@ -31,11 +31,11 @@ Table of contents
 
 1. [Quick start](#quick-start)
 
-      3.1. [Compilation](#compilation---linux--mac-os--windows-with-cygwin)
+      3.1. [Compilation](#compilation): Linux / Mac OS / Windows with Cygwin
       
       3.2. [Run a basic example](#run-a-basic-example): built-in shape primitives, mesh adaptivity control, parallel threads control
 
-      3.3. [Understand the output files](#understand-the-output-files)
+      3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries
 
       3.4. [Customization](#customization): shape boolean operations, custom shape input from contour line segments, shape from binary image
 
@@ -123,7 +123,7 @@ Quick start
 ==================================================
 
 
-Compilation - Linux / Mac OS / Windows with Cygwin
+Compilation
 ---------------
 The code is written in ANSI <span style="font-variant:small-caps;">C++</span>, and compiles on many system architectures. The
 package contains the <span style="font-variant:small-caps;">C++</span> source code and example files. On Linux, Mac OS, and 
