@@ -266,6 +266,20 @@ Understand the output files
 Customization
 ---------------
 
+### User defined signed distance field
+
+### User defined sizing field
+
+
+### Shape boolean operations
+
+
+### Custom shape input from contour line segments
+
+
+### Shape from binary image
+
+
 
 Performance
 ================================================
