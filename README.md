@@ -173,13 +173,14 @@ sprintf(case_name_base,"triangle_mesh_N_%d_K_%g",Ntotal,K);
 //Create directory to store file outputs
 mkdir(case_name_base,S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
 ```
-
+### Multi-threaded <span style="font-variant:small-caps;">Voro++</span>
 ```c++
 //------------------1.Create container----------------------
 int cnx=sqrt(Ntotal/3.3); int cny=cnx;
 container_2d con(0.0,1.0,0.0,1.0,cnx,cny,false,false,16,num_t);
 ```
 
+### Built-in 2D primitive shapes
 ```c++
 //-------------------2.Create shape------------------------
   //shape_2d_circle shp(con,num_t,0.3,0.5,0.5);
