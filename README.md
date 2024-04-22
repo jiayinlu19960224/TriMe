@@ -41,7 +41,7 @@ Table of contents
 
 1. [Performance](#performance)
 
-1. [Code updates](#updates)
+1. [Code updates](#code-updates)
 
 1. [Acknowledgement](#acknowledgement)
 
