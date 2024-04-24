@@ -35,7 +35,7 @@ Table of contents
       
       3.2. [Run a basic example](#run-a-basic-example): built-in shape primitives, mesh adaptivity control, parallel threads control
 
-      3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries
+      3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries, triangle quality measures
 
       3.4. [Customization](#customization): user-defined sizing field, shape boolean operations, custom shape from user-defined signed distance function, custom shape from contour line segments, custom shape from binary image
 
@@ -261,6 +261,43 @@ else if(method_ind==2){ //Hybrid
 
 Understand the output files
 ---------------
+Let's now look at the output files from running <code>./primitive_shape_meshing</code>. They are in the directory <code>/Example/triangle_mesh_N_5000_K_0.1</code>. 
+
+### Triangulation data structure 
+
+In <span style="font-variant:small-caps;">TriMe++</span>, each point is associated with an ID <code>pid</code> and x and y coordinates <code>(px, py)</code>. 
+> point: <code>pid, (px, py)</code>
+
+A triangle is associated with an ID <code>tid</code>, and the three point IDs of its three vertices, <code>(vid1, vid2, vid3)</code>.
+> triangle: <code>tid, (vid1, vid2, vid3)</code>
+
+### Output files
+
+The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase describe the meshing iteration outputed: <code>fp_1_...</code> is the initial triangulation; <code>fp_10_...</code> is the triangulation of the $10^{th}$ iteration. If <code>output_interval=-1</code> is set to only output at termination, then the description phrase is <code>fp_final_...</code>. 
+
+The rest of the description phrases in the filenames desribes the data being outputted. Suppose we have $N$ points and $M$ triangles generated: 
+
+> <code>..._xy_id.txt</code>: Each row format is <code>[x y]</code>. The particle ID and coordinates. The particle ID <code>[0,1,...,N-1]</code> is implicity implied by the line number. The first line corresponds to the coordinates of point $0$, and the tenth line corresponds to the coordinates of point $9$.
+>
+> <code>..._tria_bar_ids.txt</code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
+> 
+> <code>..._tria_bar_coords.txt</code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
+>> <code>[x0 y0]</code>
+>>
+>> <code>[x1 y1]</code>
+>
+> An empty line then follows, separating the current edge output and the next edge output. 
+>
+> <code>..._tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
+>
+> <code>..._tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
+
+We also have the output files with triangle quality measures, aspect ratio $\alpha$ and edge ratio $\beta$. 
+>
+> <code>..._tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
+>
+> <code>..._tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$\beta_0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
+>
 
 
 Customization
