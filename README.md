@@ -290,13 +290,13 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Points**
 
-> <code> <span style="color: gray">fp_ti_</span><span style="color: blue">xy_id.txt</span></code>: Each row format is <code>[x y]</code>. The particle ID and coordinates. The particle ID <code>[0,1,...,N-1]</code> is implicity implied by the line number. The first line corresponds to the coordinates of point $0$, and the tenth line corresponds to the coordinates of point $9$.
+> <code>fp_ti_xy_id.txt</code>: Each row format is <code>[x y]</code>. The particle ID and coordinates. The particle ID <code>[0,1,...,N-1]</code> is implicity implied by the line number. The first line corresponds to the coordinates of point $0$, and the tenth line corresponds to the coordinates of point $9$.
 
 **Edges**
 
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_bar_ids.txt</span></code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
+> <code>fp_ti_tria_bar_ids.txt</code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
 > 
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_bar_coords.txt</span></code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
+> <code>fp_ti_tria_bar_coords.txt</code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
 >> <code>[x0 y0]</code>
 >>
 >> <code>[x1 y1]</code>
@@ -305,17 +305,17 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Triangles**
 
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_vertex_ids.txt</span></code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
+> <code>fp_ti_tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
 >
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_vertex_coords.txt</span></code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
+> <code>fp_ti_tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
 
 **Mesh quality**
 
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_quality_stat_ar.txt</span></code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
+> <code>fp_ti_tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
 >
-> <code><span style="color: gray">fp_ti_</span><span style="color: blue">tria_quality_stat_er.txt</span></code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$\beta_0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
+> <code>fp_ti_tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$β0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
 >
-> <code><span style="color: gray">fp_</span><span style="color: blue">tria_quality_stat_overall.txt</span></code>: This file outputs the overall mesh quality at the corresponding outputted triangulation iterations. Each row consists of $12$ numbers, they are (in order): 
+> <code>fp_tria_quality_stat_overall.txt</code>: This file outputs the overall mesh quality at the corresponding outputted triangulation iterations. Each row consists of $12$ numbers, they are (in order): 
 > - (0) the triangulation iteration number,
 > - (1) the number of triangles,
 > - (2) the maximum $\alpha$, (3) the maximum $\beta$,
@@ -332,9 +332,9 @@ which is less sensitive to large outliers than the arithmetic mean, and thus mor
 
 Suppose the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. The boundary numbering $b_i$ is based on descending order of the number of boundary points on each boundary. 
 
-><code><span style="color: gray">fp_ti_</span><span style="color: blue">bdry_vertices_ids_CCW_bi.txt</span></code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
+>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
 >
-><code><span style="color: gray">fp_ti_</span><span style="color: blue">bdry_vertices_coords_CCW_bi.txt</span></code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code><span style="color: gray">fp_ti_</span><span style="color: blue">bdry_vertices_ids_CCW_bi.txt</span></code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
+>fp_ti_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
 
 Customization
 ---------------
