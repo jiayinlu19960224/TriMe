@@ -280,7 +280,9 @@ where $R_{\text{circum}}$ and $R_{\text{in}}$ are the circumradius and the inrad
 
 ![bad triangle plot](/docs/needle_flat_triangles.jpg)
 
-<center><img src="/docs/needle_flat_triangles.jpg" width="200" /></center>
+<p align="center">
+<img src="/docs/needle_flat_triangles.jpg" width="200" />
+</p>
 
 ### Output files
 
