@@ -268,11 +268,11 @@ Let's now look at the output files from running <code>./primitive_shape_meshing<
 In <span style="font-variant:small-caps;">TriMe++</span>, each point is associated with an ID <code>pid</code> and x and y coordinates <code>(px, py)</code>. 
 > point: <code>pid, (px, py)</code>
 
-A triangle is associated with an ID <code>tid</code>, the three point IDs of its three vertices, <code>(vid0, vid1, vid2)</code>, and two quality measures, aspect ratio <code>$\alpha$</code> and edge ratio <code>$\beta$</code>.
+A triangle is associated with an ID <code>tid</code>, the three point IDs of its three vertices, <code>(vid0, vid1, vid2)</code>, and two quality measures, aspect ratio <code>α</code> and edge ratio <code>β</code>.
 
-> triangle: <code>tid, (vid0, vid1, vid2), ($\alpha$, $\beta$)</code>
+> triangle: <code>tid, (vid0, vid1, vid2), (α, β)</code>
 
-The aspect ratio <code>$\alpha$</code> and edge ratio <code>$\beta$</code> are calculated by 
+The aspect ratio $\alpha$ and edge ratio $\beta$ are calculated by 
 
 $$\alpha=\frac{R_{\text{circum}}}{2\cdot R_{\text{in}}}, \quad \beta=\frac{l_{\max}}{l_{\min}}$$
 
@@ -311,9 +311,9 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Mesh quality**
 
-> <code>fp_ti_tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
+> <code>fp_ti_tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[α0 α1 α2 ... αM]</code>.
 >
-> <code>fp_ti_tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$β0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
+> <code>fp_ti_tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[β0 β1 β2 ... βM]</code>.
 >
 > <code>fp_tria_quality_stat_overall.txt</code>: This file outputs the overall mesh quality at the corresponding outputted triangulation iterations. Each row consists of $12$ numbers, they are (in order): 
 > - (0) the triangulation iteration number,
