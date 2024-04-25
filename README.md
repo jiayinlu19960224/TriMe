@@ -278,12 +278,9 @@ $$\alpha=\frac{R_{\text{circum}}}{2\cdot R_{\text{in}}}, \quad \beta=\frac{l_{\m
 
 where $R_{\text{circum}}$ and $R_{\text{in}}$ are the circumradius and the inradius of the triangle, respectively. $l_{\max}$ and $l_{\min}$ are the longest and shortest edge lengths of the triangle, respectively. Both $\alpha$ and $\beta$ have minimum values of $1$, corresponding to an equilateral triangle. $\alpha$ has large values for badly shaped triangles, including both needle-type and flat-type triangles shown in the figure below. $\beta$ has large values for needle-type triangles.
 
-![header plot](/docs/needle_flat_triangles.jpg)
+![bad triangle plot](/docs/needle_flat_triangles.jpg)
 
-<p align="center">
-  <img src="https://github.com/jiayinlu19960224/TriMe/tree/main/docs/needle_flat_triangles.jpg" />
-</p>
-
+<img src="/docs/needle_flat_triangles.jpg" width="200" height="200" />
 
 ### Output files
 
