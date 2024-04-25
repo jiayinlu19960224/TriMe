@@ -332,9 +332,9 @@ which is less sensitive to large outliers than the arithmetic mean, and thus mor
 
 Suppose the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. The boundary numbering $b_i$ is based on descending order of the number of boundary points on each boundary. 
 
->fp_ti_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
+><code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
 >
->fp_ti_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
+><code>fp_ti_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
 
 Customization
 ---------------
