@@ -493,9 +493,9 @@ void mesh_alg_2d::print_worst_tria(const char *file_name_prefix){
 /**
  * @brief Prints the overall statistics of triangle quality to a text file.
  */
-void mesh_alg_2d::print_tria_quality_stat_overall(){
+void mesh_alg_2d::print_tria_quality_stat_overall(const char *file_name_prefix){
     char bug2[256];
-    sprintf(bug2,"%s/tria_quality_stat_overall.txt",pm2d->file_name_prefix);
+    sprintf(bug2,"%s_tria_quality_stat_overall.txt",file_name_prefix);
     FILE *outFile2 = fopen(bug2, "a");
 
     fprintf(outFile2,"%d %d %g %g %g %g %g %g %g %g %g %g \n",
@@ -548,15 +548,15 @@ void mesh_alg_2d::determine_printOutputs(){
  * 		  Each line correspond to a boundary. 
  *
  */
-void mesh_alg_2d::print_bdry_CCW(){
+void mesh_alg_2d::print_bdry_CCW(const char *file_name_prefix){
 
 	for(int i=0;i<(signed int) Bdry_Edges_Start.size();i++){
 		char bug0[256];
-		sprintf(bug0,"%s/bdry_vertices_ids_CCW_%d.txt",pm2d->file_name_prefix,i);
+		sprintf(bug0,"%s_bdry_vertices_ids_CCW_%d.txt",pm2d->file_name_prefix,i);
     	FILE *outFile0 = fopen(bug0, "a");
 
     	char bug1[256];
-		sprintf(bug1,"%s/bdry_vertices_coords_CCW_%d.txt",pm2d->file_name_prefix,i);
+		sprintf(bug1,"%s_bdry_vertices_coords_CCW_%d.txt",pm2d->file_name_prefix,i);
     	FILE *outFile1 = fopen(bug1, "a");
 
 		bool Continue_bdry=true;
@@ -597,9 +597,10 @@ void mesh_alg_2d::do_print_outputs(){
 	print_tria_quality_stat(bug0);  //Print out the statistics of each triangle's quality measures
 
 
-	print_tria_quality_stat_overall(); //Print out the overall triangulation quality statistics
+	char bug1[256];
+    sprintf(bug1,"%s/%s",pm2d->file_name_prefix,pm2d->file_name_prefix);
+	print_tria_quality_stat_overall(bug1); //Print out the overall triangulation quality statistics
 
-	//print_particle_coords(bug0);  //Print out vertices coordinates
 	//print_worst_tria(bug0);   //Print out the triangles with worst qualities
 	//print_voro_diagram(bug0);   //Print out the associated Voronoi diagram
 }
@@ -619,14 +620,18 @@ void mesh_alg_2d::do_print_final_outputs(){
 	
 	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
 	
+	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
+	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
 	print_tria_vertex_ids(bug0);  //Print out the triangle vertex ID's
 	print_tria_vertex_coords(bug0);  //Print out the triangle vertex coordinates
+	
 	print_tria_quality_stat(bug0);  //Print out the statistics of each triangle's quality measures
-	print_tria_quality_stat_overall(); //Print out the overall triangulation quality statistics
+	
+	char bug1[256];
+    sprintf(bug1,"%s/%s",pm2d->file_name_prefix,pm2d->file_name_prefix);
+	print_tria_quality_stat_overall(bug1); //Print out the overall triangulation quality statistics
 
-	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
-	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
-	print_bdry_CCW(); //Print out boundary vertices in CCW order; Each line correspond to a separate bdry
+	print_bdry_CCW(bug0); //Print out boundary vertices in CCW order; Each line correspond to a separate bdry
 
 }
 

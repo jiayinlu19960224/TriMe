@@ -284,7 +284,7 @@ where $R_{\text{circum}}$ and $R_{\text{in}}$ are the circumradius and the inrad
 
 ### Output files
 
-The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase <code>ti</code> describe the meshing iteration outputed: <code>fp_ti_=fp_1_</code> is the initial triangulation; <code>fp_10_</code> is the triangulation of the $10^{th}$ iteration. If <code>output_interval=-1</code> is set to only output at termination, then the description phrase is <code>fp_final_</code>. 
+The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase <code>ti</code> describe the meshing iteration outputted: <code>fp_ti_=fp_1_</code> is the initial triangulation; <code>fp_10_</code> is the triangulation of the $10^{th}$ iteration. For the last triangulation at termination, the phrase is set to <code>fp_final_</code>.
 
 The rest of the description phrases in the filenames desribes the data being outputted. Suppose we have $N$ points and $M$ triangles generated. 
 
@@ -330,11 +330,13 @@ which is less sensitive to large outliers than the arithmetic mean, and thus mor
 
 **Shape boundaries**
 
-Suppose the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. The boundary numbering $b_i$ is based on descending order of the number of boundary points on each boundary. 
+We can output the vertices and edges made up of the shape boundaries in counter-clockwise order at termination. Note that this is only outputted at termination.
 
-><code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
+Suppose at termination, the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. 
+
+><code>fp_final_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
 >
-><code>fp_ti_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_ti_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
+><code>fp_final_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_final_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
 
 Customization
 ---------------

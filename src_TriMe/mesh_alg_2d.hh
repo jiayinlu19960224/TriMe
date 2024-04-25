@@ -324,7 +324,7 @@ namespace voro {
          *      Requires tria_vertex to have been stored in the voro-tria calculation.
          */
         void construct_HE();
-        void print_bdry_CCW();
+        void print_bdry_CCW(const char *file_name_prefix);
 
         //add_pt and termination criteria
         double alpha_mean_tria_ar; /**< Alpha-mean value of triangles' aspect ratio */
@@ -625,7 +625,7 @@ namespace voro {
         /**
          * Prints the overall triangle mesh quality statistics.
          */
-        void print_tria_quality_stat_overall();
+        void print_tria_quality_stat_overall(const char *file_name_prefix);
 
         /**
          * Prints the Voronoi diagram to a file with the given file name prefix.
