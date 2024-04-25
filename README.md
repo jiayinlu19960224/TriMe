@@ -268,9 +268,9 @@ Let's now look at the output files from running <code>./primitive_shape_meshing<
 In <span style="font-variant:small-caps;">TriMe++</span>, each point is associated with an ID <code>pid</code> and x and y coordinates <code>(px, py)</code>. 
 > point: <code>pid, (px, py)</code>
 
-A triangle is associated with an ID <code>tid</code>, the three point IDs of its three vertices, <code>(vid1, vid2, vid3)</code>, and two quality measures, aspect ratio <code>$\alpha$</code> and edge ratio <code>$\beta$</code>.
+A triangle is associated with an ID <code>tid</code>, the three point IDs of its three vertices, <code>(vid0, vid1, vid2)</code>, and two quality measures, aspect ratio <code>$\alpha$</code> and edge ratio <code>$\beta$</code>.
 
-> triangle: <code>tid, (vid1, vid2, vid3), ($\alpha$, $\beta$)</code>
+> triangle: <code>tid, (vid0, vid1, vid2), ($\alpha$, $\beta$)</code>
 
 The aspect ratio <code>$\alpha$</code> and edge ratio <code>$\beta$</code> are calculated by 
 
@@ -284,19 +284,19 @@ where $R_{\text{circum}}$ and $R_{\text{in}}$ are the circumradius and the inrad
 
 ### Output files
 
-The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase describe the meshing iteration outputed: <code>fp_1_...</code> is the initial triangulation; <code>fp_10_...</code> is the triangulation of the $10^{th}$ iteration. If <code>output_interval=-1</code> is set to only output at termination, then the description phrase is <code>fp_final_...</code>. 
+The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase <code>ti</code> describe the meshing iteration outputed: If <code>fp_ti_...</code> is <code>fp_1_...</code> is the initial triangulation; <code>fp_10_...</code> is the triangulation of the $10^{th}$ iteration. If <code>output_interval=-1</code> is set to only output at termination, then the description phrase is <code>fp_final_...</code>. 
 
 The rest of the description phrases in the filenames desribes the data being outputted. Suppose we have $N$ points and $M$ triangles generated. 
 
 **Points**
 
-> <code>..._xy_id.txt</code>: Each row format is <code>[x y]</code>. The particle ID and coordinates. The particle ID <code>[0,1,...,N-1]</code> is implicity implied by the line number. The first line corresponds to the coordinates of point $0$, and the tenth line corresponds to the coordinates of point $9$.
+> <code> <span style="color: gray">fp_ti_</span>xy_id.txt</code>: Each row format is <code>[x y]</code>. The particle ID and coordinates. The particle ID <code>[0,1,...,N-1]</code> is implicity implied by the line number. The first line corresponds to the coordinates of point $0$, and the tenth line corresponds to the coordinates of point $9$.
 
 **Edges**
 
-> <code>..._tria_bar_ids.txt</code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
+> <code><span style="color: gray">fp_ti_</span>tria_bar_ids.txt</code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
 > 
-> <code>..._tria_bar_coords.txt</code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
+> <code><span style="color: gray">fp_ti_</span>tria_bar_coords.txt</code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
 >> <code>[x0 y0]</code>
 >>
 >> <code>[x1 y1]</code>
@@ -305,18 +305,36 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Triangles**
 
-> <code>..._tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
+> <code><span style="color: gray">fp_ti_</span>tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
 >
-> <code>..._tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
+> <code><span style="color: gray">fp_ti_</span>tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
 
 **Mesh quality**
 
-> <code>..._tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
+> <code><span style="color: gray">fp_ti_</span>tria_quality_stat_ar.txt</code>: This file consists of a single line, listing the aspect ratios $\alpha_i$ of each triangle $i$, separated by space. The format is: <code>[$\alpha_0$ $\alpha_1$ $\alpha_2$ ... $\alpha_M$]</code>.
 >
-> <code>..._tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$\beta_0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
+> <code><span style="color: gray">fp_ti_</span>tria_quality_stat_er.txt</code>: This file consists of a single line, listing the edge ratios $\beta_i$ of each triangle $i$, separated by space. The format is: <code>[$\beta_0$ $\beta_1$ $\beta_2$ ... $\beta_M$]</code>.
 >
+> <code><span style="color: gray">fp_</span>tria_quality_stat_overall.txt</code>: This file outputs the overall mesh quality at the corresponding outputted triangulation iterations. Each row consists of $12$ numbers, they are (in order): 
+> - (0) the triangulation iteration number,
+> - (1) the number of triangles,
+> - (2) the maximum $\alpha$, (3) the maximum $\beta$,
+> - (4) the median $\alpha$, (5) the median $\beta$,
+> - (6) the mean $\alpha$, (7) the mean $\beta$,
+> - (8) the $\frac{1}{2}$-mean of $\alpha$, (9) the $\frac{1}{2}$-mean of $\beta$, 
+> - (10) the standard deviation of $\alpha$, (11) the standard deviation of $\beta$. 
 
+The $\frac{1}{2}$-mean mentioned above is calculated as, 
+$$M_{\frac{1}{2}}(x_1,\ldots,x_n)=\left( \frac{1}{n}\sum_{i=1}^n x_i^{\frac{1}{2}} \right)^2,$$
+which is less sensitive to large outliers than the arithmetic mean, and thus more suitable as an indicator for overall mesh quality.
 
+**Shape boundaries**
+
+Suppose the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. The boundary numbering $b_i$ is based on descending order of the number of boundary points on each boundary. 
+
+><code><span style="color: gray">fp_ti_</span>bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
+>
+><code><span style="color: gray">fp_ti_</span>bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code><span style="color: gray">fp_ti_</span>bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
 
 Customization
 ---------------
