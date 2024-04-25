@@ -381,7 +381,7 @@ Acknowledgement
 =====
 This research was supported by a grant from the United States--Israel Binational
 Science Foundation (BSF), Jerusalem, Israel through grant number 2018/170.
-C.~H.~Rycroft was partially supported by the Applied Mathematics
+C. H. Rycroft was partially supported by the Applied Mathematics
 Program of the U.S. DOE Office of Advanced Scientific Computing Research under
 contract number DE-AC02-05CH11231.
 
