@@ -368,7 +368,7 @@ namespace voro {
 
         // Meshing variables
         mesh_alg_2d* mesh_alg; /**< Meshing algorithm to choose from */
-        int output_interval; /**< Output interval: 0 - no output, -1 - last final output, >0 - output every n triangulations */
+        int output_interval; /**< Output interval: 0 no output, -1 last final output, -2 initial and final outputs, n>0 -output every n triangulations */
 
 
         /**

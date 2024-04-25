@@ -525,8 +525,17 @@ void mesh_alg_2d::print_voro_diagram(const char *file_name_prefix){
  */
 void mesh_alg_2d::determine_printOutputs(){
 	printOutputs=false;
-	//int pm2d->output_interval: 0, no output; -1, last final output; 10, every 10 triangulations output  
+	//int pm2d->output_interval: 
+	//0, no output; 
+	//-1, last final output; 
+	//-2, initial and final outputs;
+	//10, every 10 triangulations output  
 	if(pm2d->output_interval==-1){
+		if(Continue==false){ 
+			printOutputs=true;
+		}
+	}
+	if(pm2d->output_interval==-2){
 		if(Continue==false || tria_iter_ct==1){
 			printOutputs=true;
 		}
@@ -552,11 +561,11 @@ void mesh_alg_2d::print_bdry_CCW(const char *file_name_prefix){
 
 	for(int i=0;i<(signed int) Bdry_Edges_Start.size();i++){
 		char bug0[256];
-		sprintf(bug0,"%s_bdry_vertices_ids_CCW_%d.txt",pm2d->file_name_prefix,i);
+		sprintf(bug0,"%s_bdry_vertices_ids_CCW_%d.txt",file_name_prefix,i);
     	FILE *outFile0 = fopen(bug0, "a");
 
     	char bug1[256];
-		sprintf(bug1,"%s_bdry_vertices_coords_CCW_%d.txt",pm2d->file_name_prefix,i);
+		sprintf(bug1,"%s_bdry_vertices_coords_CCW_%d.txt",file_name_prefix,i);
     	FILE *outFile1 = fopen(bug1, "a");
 
 		bool Continue_bdry=true;

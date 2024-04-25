@@ -153,7 +153,14 @@ In the main code, these few lines at the beginning of the code specify:
 - <code>method_ind</code>: The meshing algorithm to use. $0$ DistMesh; $1$ CVD; $2$ Hybrid.
 - <code>Ntotal</code>: The total number of meshing points.
 - <code>K</code>: Adaptivity of mesh. $0$ Uniform; $>1$ Adaptive; Larger <code>K</code> increases the adaptivity of mesh.
-- <code>output_interval</code>: File output frequency. $0$ No output; $-1$ Only output at termination; any positive integer, e.g. $10$, represents outputting every $10$ triangulations during the meshig procedure. 
+- <code>output_interval</code>: File output frequency. 
+  >$0$ No output; 
+  >
+  >$-1$ Only output at termination; 
+  >
+  >$-2$ Output initial and final triangulation data
+  >
+  >Any positive integer, e.g. $10$, represents outputting every $10$ triangulations during the meshig procedure. 
 
 Here, we are using $4$ parallel threads, the hybrid meshing method, $5000$ meshing vertices, with an adaptivity $K=0.1$, and output the meshing data at termination. 
 ```c++

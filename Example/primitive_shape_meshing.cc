@@ -19,7 +19,7 @@ int main() {
     int Ntotal=5000; 
     //0:uniform sizing field
     double K=0.1; 
-    //File output frequency. 0 no output; -1 output at termination; 10, every 10 triangulations output
+    //File output frequency. 0 no output; -1 output at termination; -2 output initial and final; 10, every 10 triangulations output
     int output_interval=-1; 
 
     //File output name prefix
