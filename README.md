@@ -294,7 +294,7 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Edges**
 
-> <code>fp_ti_tria_bar_ids.txt</code>>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
+> <code>fp_ti_tria_bar_ids.txt</code>: Each row format is <code>[vid0 vid1]</code>, the point IDs corresponding to the end points of each edge in the triangulation. The triangulation edges are unique and non-overlapping in the output. 
 > 
 > <code>fp_ti_tria_bar_coords.txt</code>: The coordinates of the end points for each triangulation edge. Each edge consists of two rows, each row is the coordiate of one of the end poins: 
 >> <code>[x0 y0]</code>
