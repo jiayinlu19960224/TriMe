@@ -379,7 +379,7 @@ Oct 19th, 2023:
 
 Acknowledgement
 =====
-This research was supported by a grant from the United States--Israel Binational
+This research was supported by a grant from the United States-Israel Binational
 Science Foundation (BSF), Jerusalem, Israel through grant number 2018/170.
 C. H. Rycroft was partially supported by the Applied Mathematics
 Program of the U.S. DOE Office of Advanced Scientific Computing Research under
