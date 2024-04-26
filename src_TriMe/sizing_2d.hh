@@ -113,13 +113,24 @@ namespace voro {
         /**
          * @brief Calculates and returns the density value for the given coordinates (x, y).
          * 
-         * This method should be overridden in derived classes to provide the actual density calculation.
+         * A default calculation is implemented here. 
+         * This method should be overridden in the derived sizing_2d_automatic classes to provide the actual density calculation in that class.
          * 
          * @param x The x-coordinate.
          * @param y The y-coordinate.
          * @return The density value.
          */
-        virtual double getDensityVal(double x, double y){return 0;};   
+        virtual double getDensityVal(double x, double y){
+          double sizing_val=getSizingVal(x,y);
+          if(density_sizing_exp==2){
+            return 1.0/(sizing_val*sizing_val);
+          }
+          else{
+            return 1.0/pow(sizing_val,density_sizing_exp);  //rho=1/(h**2)
+          }
+          
+        };
+        
 
         /**
          * @brief Only called in CVD meshing for automatic sizing field for outer grids.
@@ -266,62 +277,6 @@ namespace voro {
         void print_pts_to_file(const char *case_name); 
     };
 
-
-    /**
-     * @brief A class representing a user-defined sizing function in 2D.
-     *
-     * This class derives from the base class `sizing_2d` and provides user-defined implementations for
-     * computing sizing and density values at a given point.
-     */
-    class sizing_2d_func : public sizing_2d {
-        public:
-
-          /**
-           * @brief Constructor for the `sizing_2d_func` class.
-           *
-           * @param shp_ A pointer to the underlying shape_2d object.
-           */
-          sizing_2d_func(shape_2d *shp_) : sizing_2d(shp_){}
-
-          /**
-           * @brief Destructor for the `sizing_2d_func` class.
-           */
-          ~sizing_2d_func(){};
-
-          /**
-           * @brief Computes the sizing value at a given point (x, y).
-           *
-           * This function implements the user-defined sizing function.
-           *
-           * @param x The x-coordinate of the point.
-           * @param y The y-coordinate of the point.
-           * @return The computed sizing value at the point (x, y).
-           */
-          double getSizingVal(double x, double y){
-            return 1.0+x+y;
-          };
-
-          /**
-           * @brief Computes the density value at a given point (x, y).
-           *
-           * This function implements the user-defined density function based on the sizing value at the point (x, y).
-           * The density value is computed based on the equation rho = 1 / (h^exponent), where h is the sizing value.
-           *
-           * @param x The x-coordinate of the point.
-           * @param y The y-coordinate of the point.
-           * @return The computed density value at the point (x, y).
-           */
-          double getDensityVal(double x, double y){
-            double sizing_val=getSizingVal(x,y);
-            if(density_sizing_exp==2){
-              return 1.0/(sizing_val*sizing_val);
-            }
-            else{
-              return 1.0/pow(sizing_val,density_sizing_exp);  //rho=1/(h**2)
-            }
-            
-          };
-    };
 
 }
 

@@ -347,15 +347,13 @@ Suppose at termination, the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We us
 
 Customization
 ---------------
-### user-defined sizing field
+### User-defined sizing field
 
-### shape boolean operations
+### Shape boolean operations
 
-### custom shape from user-defined signed distance function
+### Custom shape from user-defined signed distance function
 
-### custom shape from contour line segments
-
-### custom shape from binary image
+### Custom shape from contour line segments
 
 
 
