@@ -219,7 +219,7 @@ The plot here shows three example meshes using the different primitive shapes an
 
 
 ### Meshing
-Next, we create the adaptive sizing field for meshing, based on the shape defined and the adaptivity parameter <code>K</code>. 
+Next, we generate automatically the adaptive sizing field for meshing, based on the shape defined and the adaptivity parameter <code>K</code>. 
 ```c++
 //-------------------3.Create adaptive sizing field------------------
 sizing_2d_automatic size_field(&shp,K);
@@ -349,7 +349,15 @@ Customization
 ---------------
 ### User-defined sizing field
 
+
+<p align="center">
+<img src="/docs/rectangle_user_defined_sizing_field.png" width="300" />
+</p>
+
 ### Shape boolean operations
+
+
+
 
 ### Custom shape from user-defined signed distance function
 
