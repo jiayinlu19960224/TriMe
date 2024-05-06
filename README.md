@@ -348,11 +348,60 @@ Suppose at termination, the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We us
 Customization
 ---------------
 ### User-defined sizing field
+In the basic example above, the (triangle) element sizing field was calculated automatically, based on the mesh gradation parameter $K$, using the <code>sizing_2d_automatic</code> sizing field object. A possible customization is that users may define their own sizing field function. 
 
+A sizing field function gives the ***relative*** sizes of the triangles. For example, a sizing field of $1+x$ on a square domain $[0,1]\times[0,1]$ means the triangles close to the right edge $x=1$ are about two times larger than the triangles close to the left edge $x=0$. 
+
+ An example implementation is provided in the file ``primitive_shape_meshing_sizing_function.cc``. Notice that we first need to create our own sizing field class ``sizing_2d_func``, which is derived from the base class ``sizing_2d``. In ``sizing_2d_func``, we can define our own sizing field function in ``double getSizingVal(double x, double y)``. 
+
+ ```c++
+ /**
+ * @brief A class representing a user-defined sizing function in 2D.
+ *
+ * This class derives from the base class `sizing_2d` and provides user-defined implementations for
+ * computing sizing and density values at a given point.
+ */
+class sizing_2d_func : public sizing_2d {
+    public:
+
+      /**
+       * @brief Constructor for the `sizing_2d_func` class.
+       *
+       * @param shp_ A pointer to the underlying shape_2d object.
+       */
+      sizing_2d_func(shape_2d *shp_) : sizing_2d(shp_){}
+
+      /**
+       * @brief Destructor for the `sizing_2d_func` class.
+       */
+      ~sizing_2d_func(){};
+
+      /**
+       * @brief Computes the sizing value at a given point (x, y).
+       *
+       * This function implements the user-defined sizing function.
+       *
+       * @param x The x-coordinate of the point.
+       * @param y The y-coordinate of the point.
+       * @return The computed sizing value at the point (x, y).
+       */
+      double getSizingVal(double x, double y){
+        return 1.0+3*x+3*y;
+      };
+
+};
+ ```
+ 
+ The execution code in ``int main()`` are the same as previous, except that we use ``sizing_2d_func size_field(&shp);`` for the user-defined sizing field, instead of the automatic sizing field ``sizing_2d_automatic size_field(&shp,K);``. 
+ 
+
+ The example code generates the following mesh, where the triangles close to the origin are the smallest, and gradually grows larger towards $(1,1)$. 
 
 <p align="center">
 <img src="/docs/rectangle_user_defined_sizing_field.png" width="300" />
 </p>
+
+
 
 ### Shape boolean operations
 
