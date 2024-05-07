@@ -404,6 +404,50 @@ class sizing_2d_func : public sizing_2d {
 
 
 ### Shape boolean operations
+We can perform boolean operations on shapes. Suppose $d_{A}$ and $d_{B}$ are the signed distance fields for two shapes, $A$ and $B$, then the signed distance field from their boolean operations can be computed as follows [[1]](#references):
+
+> Union: $\quad d_{A\cup B}(x,y)=\min (d_{A}(x,y), d_{B}(x,y))$
+>
+> Difference: $\quad d_{A\backslash B}(x,y)=\max (d_{A}(x,y), -d_{B}(x,y))$
+>
+> Intersection: $\quad d_{A\cap B}(x,y)=\max (d_{A}(x,y), d_{B}(x,y))$
+
+These operations are implemented in the code as ``shape_2d`` derived class objects that we can create, and they are ``shape_2d_union``, ``shape_2d_difference`` and ``shape_2d_intersection``, respectively. 
+
+An example implementation is provided in the file ``primitive_shape_meshing_boolean_sdf.cc``. The final mesh looks as follows: 
+
+<p align="center">
+<img src="/docs/boolean_mesh_plot.png" width="400" />
+</p>
+
+To create this shape, we first , 
+
+```c++
+//A. Intersection
+shape_2d_circle cdl(con,num_t,0.15,0.4,0.4);
+shape_2d_circle cdr(con,num_t,0.15,0.6,0.4);
+shape_2d_circle cul(con,num_t,0.15,0.4,0.6);
+shape_2d_circle cur(con,num_t,0.15,0.6,0.6);
+
+shape_2d_intersection leafd(con,num_t,&cdl,&cdr);
+shape_2d_intersection leafl(con,num_t,&cdl,&cul);
+shape_2d_intersection leafu(con,num_t,&cul,&cur);
+shape_2d_intersection leafr(con,num_t,&cdr,&cur);
+
+//B. Union
+shape_2d_circle cm(con,num_t,0.1,0.5,0.5);
+
+shape_2d_union m0(con,num_t,&leafd,&leafl);
+shape_2d_union m1(con,num_t,&m0,&leafu);
+shape_2d_union m2(con,num_t,&m1,&leafr);
+shape_2d_union m3(con,num_t,&m2,&cm);
+
+
+//C. Difference
+shape_2d_rectangle rec(con,num_t,0.1,0.9,0.1,0.9);
+
+shape_2d_difference shp_final(con,num_t,&rec,&m3);
+```
 
 
 
