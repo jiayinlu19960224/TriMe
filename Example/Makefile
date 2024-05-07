@@ -10,7 +10,7 @@ lflags=-L$(v2d) -L$(tm2d)
 src=$(patsubst %.o,%.cc,$(objs))
 
 # List of executables
-execs= primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point parallel_meshing_2d_main_mapping
+execs= primitive_shape_meshing_boolean_sdf primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point parallel_meshing_2d_main_mapping
 
 # Makefile rules
 all:
@@ -24,6 +24,9 @@ depend:
 	$(cxx) $(iflags) -MM $(src) >Makefile.dep
 
 -include Makefile.dep
+
+primitive_shape_meshing_boolean_sdf: primitive_shape_meshing_boolean_sdf.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
 primitive_shape_meshing_sizing_function: primitive_shape_meshing_sizing_function.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++

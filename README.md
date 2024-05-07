@@ -420,7 +420,7 @@ An example implementation is provided in the file ``primitive_shape_meshing_bool
 <img src="/docs/boolean_mesh_plot.png" width="400" />
 </p>
 
-To create this shape, we first , 
+To create this shape, we first create four circles with some overlapping regions. And we do intersections for pairs of circles, to obtain the four leafy shapes.  
 
 ```c++
 //A. Intersection
@@ -433,7 +433,10 @@ shape_2d_intersection leafd(con,num_t,&cdl,&cdr);
 shape_2d_intersection leafl(con,num_t,&cdl,&cul);
 shape_2d_intersection leafu(con,num_t,&cul,&cur);
 shape_2d_intersection leafr(con,num_t,&cdr,&cur);
+```
 
+Next, we create a circle in the middle, and perform union of all the shapes created. 
+```c++
 //B. Union
 shape_2d_circle cm(con,num_t,0.1,0.5,0.5);
 
@@ -441,15 +444,15 @@ shape_2d_union m0(con,num_t,&leafd,&leafl);
 shape_2d_union m1(con,num_t,&m0,&leafu);
 shape_2d_union m2(con,num_t,&m1,&leafr);
 shape_2d_union m3(con,num_t,&m2,&cm);
+```
 
-
+Lastly, we create a large square, and take the difference of the square and the previous union shape. 
+```c++
 //C. Difference
 shape_2d_rectangle rec(con,num_t,0.1,0.9,0.1,0.9);
 
 shape_2d_difference shp_final(con,num_t,&rec,&m3);
 ```
-
-
 
 
 ### Custom shape from user-defined signed distance function
