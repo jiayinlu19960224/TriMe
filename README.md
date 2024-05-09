@@ -455,7 +455,105 @@ shape_2d_difference shp_final(con,num_t,&rec,&m3);
 ```
 
 
-### Custom shape from user-defined signed distance function
+### Custom shape from user-defined signed distance function (SDF)
+We can also define our own SDF. The example code is provided in ``primitive_shape_meshing_own_sdf.cc``. The code generates mesh for a six-pointed hexagram star shape with a hollow circle in the middle -- like a flower: 
+
+<p align="center">
+<img src="/docs/shape_user_defined_SDF_mesh.png" width="400" />
+</p>
+
+Let's see how to obtain our hexagram star shape. Firstly, we need to create our own SDF class, which is a derived class from the base class ``shape_2d``. 
+```c++
+/**
+ * @brief A class representing a user-defined signed distance function in 2D. 
+ * Here, we construct a SDF for a hexagram star shape. 
+ * The code of the SDF is adapted from https://iquilezles.org/articles/distfunctions2d/. 
+ *
+ * This class derives from the base class `shape_2d` and provides user-defined implementations for
+ * computing signed distance value at a given point.
+ */
+class shape_2d_mySDF : public shape_2d{...}
+```
+
+For the class constructor, it needs to take in the parameters ``container_2d &con_`` and ``int num_t_``, since they are needed for the initialization of the ``shape_2d`` class. The rest of the input parameters are user-created and based on the shape one defines. Here, we require input parameters ``(centerX_, centerY_)`` where the hexagram centers, and ``radius`` defining the radius of the circumscribed circle of the hexagram. In the constructor, ``get_geometryGrid();`` needs to be called, to initialize and create an underlying geometry grid required for the meshing code. The geometry grid categorize each grid cell as inside the shape, outside the shape, or on the shape boundary, significantly speed up the meshing procedure. 
+
+```c++
+    public: 
+        /**
+         * Constructor for shape_2d_mySDF, a shape given by user-defined signed distance field.
+         *
+         * @param con_ The container_2d object.
+         * @param num_t_ Number of parallel threads.
+         * @param centerX_ Center of the hexagram shape, x-coordinate.
+         * @param centerY_ Center of the hexagram shape, y-coordinate.
+         * @param radius_ Radius of the circumscribed circle.
+         */
+         shape_2d_mySDF(container_2d &con_, int num_t_,double centerX_, double centerY_, double radius_)
+            :shape_2d(con_,num_t_), centerX(centerX_), centerY(centerY_), radius(radius_)
+             {
+                get_geometryGrid();
+             }
+
+        /**
+          * Destructor for shape_2d_mySDF.
+          * Frees any resources allocated by the object.
+          */
+         ~shape_2d_mySDF(){};
+
+        double centerX; //Center of the hexagram shape, x-coordinate.
+        double centerY; //Center of the hexagram shape, y-coordinate.
+        double radius; //Radius of the circumscribed circle.
+```
+
+Next, we can define our own SDF in the function ``double sdf(double x, double y)``. The function format must be such that it takes in the coordinates of a point, $(x,y)$, and returns the signed distance to the shape. The SDF calculation of the hexagram shape below is adapted from the code by [[Inigo Quilez ]](https://iquilezles.org/articles/distfunctions2d/). 
+```c++
+         /**
+          * Signed distance function calculation of a hexagram star shape. 
+          * Code adapted from https://iquilezles.org/articles/distfunctions2d/. 
+          * 
+          * @param x The x-coordinate.
+          * @param y The y-coordinate.
+          * @return The signed distance of the point (x, y) to the shape.
+          *         Negative values indicate inside, positive values indicate outside.
+          */
+         double sdf(double x, double y){
+            double kx=-0.5;
+            double ky=0.86602540378;
+            double kz=0.57735026919;
+            double kw=1.73205080757;
+            //Translate (x,y) to be centered around the origin, since the hexagram SDF code is centered at the origin. 
+            x-=centerX; 
+            y-=centerY; 
+            double px=abs(x);
+            double py=abs(y);
+            double fac1=min((kx*px+ky*py),0.0)*2.0;
+            double fac2=min((ky*px+kx*py),0.0)*2.0;
+            px-=fac1*kx;
+            py-=fac1*ky;
+            px-=fac2*ky;
+            py-=fac2*kx;
+            double fac3=min(max(px,radius*kz),radius*kw);
+            px-=fac3;
+            py-=radius;
+            double d=sqrt(px*px+py*py);
+            if(py<0.0){
+                d=-d;
+            }
+            return d;
+
+         };
+```
+
+Next, in ``int main() `` implementation, we can create our ``shape_2d_mySDF`` shape. Furthermore, we create a circular shape by using the built-in primitive ``shape_2d_circle``. And we perform boolean difference of the hexagram and the circle to obtain our final flower shape. 
+
+```c++
+    //User-defined SDF shape
+    shape_2d_mySDF myShp(con,num_t,0.5,0.5,0.2);
+    //Circular shape
+    shape_2d_circle cir(con,num_t,0.1,0.5,0.5);
+    //Boolean difference of the two shapes
+    shape_2d_difference shp(con,num_t,&myShp,&cir);
+```
 
 ### Custom shape from contour line segments
 
