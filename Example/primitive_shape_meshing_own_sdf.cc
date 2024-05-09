@@ -23,21 +23,27 @@ class shape_2d_mySDF : public shape_2d{
          *
          * @param con_ The container_2d object.
          * @param num_t_ Number of parallel threads.
+         * @param centerX_ Center of the hexagram shape, x-coordinate.
+         * @param centerY_ Center of the hexagram shape, y-coordinate.
+         * @param radius_ Radius of the circumscribed circle.
          */
          shape_2d_mySDF(container_2d &con_, int num_t_,double centerX_, double centerY_, double radius_)
             :shape_2d(con_,num_t_), centerX(centerX_), centerY(centerY_), radius(radius_)
              {
                 get_geometryGrid();
              }
-
-        double centerX;
-        double centerY;
-        double radius;
+             
         /**
           * Destructor for shape_2d_mySDF.
           * Frees any resources allocated by the object.
           */
          ~shape_2d_mySDF(){};
+
+        double centerX; //Center of the hexagram shape, x-coordinate.
+        double centerY; //Center of the hexagram shape, y-coordinate.
+        double radius; //Radius of the circumscribed circle.
+
+        
 
          /**
           * Signed distance function calculation of a hexagram star shape. 
