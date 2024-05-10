@@ -37,7 +37,9 @@ Table of contents
 
       3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
 
-      3.4. [Customization](#customization): [Changing number of parallel threads](#changing-number-of-parallel-threads), [user-defined sizing field](#user-defined-sizing-field), [shape boolean operations](#shape-boolean-operations), [custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [custom shape from contour line segments](#custom-shape-from-contour-line-segments), [setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
+      3.4. [Customization](#customization): 
+            
+      [Changing number of parallel threads](#changing-number-of-parallel-threads), [User-defined sizing field](#user-defined-sizing-field), [Shape boolean operations](#shape-boolean-operations), [Custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [Custom shape from contour line segments](#custom-shape-from-contour-line-segments), [Setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
 
 1. [Performance](#performance)
 
