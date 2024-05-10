@@ -39,7 +39,12 @@ Table of contents
 
       3.4. [Customization](#customization): 
             
-      [Changing number of parallel threads](#changing-number-of-parallel-threads), [User-defined sizing field](#user-defined-sizing-field), [Shape boolean operations](#shape-boolean-operations), [Custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [Custom shape from contour line segments](#custom-shape-from-contour-line-segments), [Setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
+      - [Changing number of parallel threads](#changing-number-of-parallel-threads)
+      - [User-defined sizing field](#user-defined-sizing-field)
+      - [Shape boolean operations](#shape-boolean-operations)
+      - [Custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf)
+      - [Custom shape from contour line segments](#custom-shape-from-contour-line-segments)
+      - [Setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
 
 1. [Performance](#performance)
 
