@@ -37,7 +37,7 @@ Table of contents
 
       3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
 
-      3.4. [Customization](#customization): user-defined sizing field, shape boolean operations, custom shape from user-defined signed distance function, custom shape from contour line segments, custom shape from binary image
+      3.4. [Customization](#customization): [user-defined sizing field](#user-defined-sizing-field), [shape boolean operations](#shape-boolean-operations), [custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [custom shape from contour line segments](#custom-shape-from-contour-line-segments), [setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
 
 1. [Performance](#performance)
 
@@ -559,6 +559,7 @@ Next, in ``int main() `` implementation, we can create our ``shape_2d_mySDF`` sh
 
 
 
+### Setting fixed points in the mesh
 
 
 Performance
