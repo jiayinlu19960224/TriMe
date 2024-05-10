@@ -37,7 +37,7 @@ Table of contents
 
       3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
 
-      3.4. [Customization](#customization): [user-defined sizing field](#user-defined-sizing-field), [shape boolean operations](#shape-boolean-operations), [custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [custom shape from contour line segments](#custom-shape-from-contour-line-segments), [setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
+      3.4. [Customization](#customization): [Changing number of parallel threads](#changing-number-of-parallel-threads), [user-defined sizing field](#user-defined-sizing-field), [shape boolean operations](#shape-boolean-operations), [custom shape from user-defined signed distance function](#custom-shape-from-user-defined-signed-distance-function-sdf), [custom shape from contour line segments](#custom-shape-from-contour-line-segments), [setting fixed points in the mesh](#setting-fixed-points-in-the-mesh)
 
 1. [Performance](#performance)
 
@@ -347,6 +347,8 @@ Suppose at termination, the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We us
 
 Customization
 ---------------
+### Changing number of parallel threads
+
 ### User-defined sizing field
 In the basic example above, the (triangle) element sizing field was calculated automatically, based on the mesh gradation parameter $K$, using the <code>sizing_2d_automatic</code> sizing field object. A possible customization is that users may define their own sizing field function. 
 
@@ -566,7 +568,7 @@ We can also define our shape using the contour line segments of the shape. The l
 * Orientation: 
 > A boundary enclosing the shape interior is defined as a sequence of points in ***clockwise*** order, forming a closed loop with the same end point ``[x0,y0]``. For example, ``boundary1`` can be defined as: ``boundary1 = [x0,y0, x1,y1, x2,y2, x3,y3, x0,y0]``, where the ***interior*** of the loop is the ***interior*** of the shape.
 
-> If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape***.
+> If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape.
 
 
 An example is provided in ``custom_poker_meshing.cc``. Here is the mesh it produces:
