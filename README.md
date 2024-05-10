@@ -556,6 +556,63 @@ Next, in ``int main() `` implementation, we can create our ``shape_2d_mySDF`` sh
 ```
 
 ### Custom shape from contour line segments
+We can also define our shape using the contour line segments of the shape. The line segments are stored in a variable ``std::vector<std::vector<double>> boundaries``. 
+
+* Number of shape boundaries : A shape can have multiple shape boundaries. 
+> If the shape has one boundary, the line segments of that boundary are stored in a vector, e.g. ``boundary1``, and then further stored in the variable ``boundaries``. That is, ``boundaries[0]`` is that boundary vector.
+
+> If the shape has multiple boundaries, each boundary has a vector that stores its line segments, e.g. ``boundary1``, ``boundary2``, etc. These boundary vectors are further stored in the variable ``boundaries``. That is, ``boundaries[0]`` is the vector of the first boundary, ``boundaries[1]`` is the vector of the second boundary, and so on. 
+
+* Orientation: 
+> A boundary enclosing the shape interior is defined as a sequence of points in ***clockwise*** order, forming a closed loop with the same end point ``[x0,y0]``. For example, ``boundary1`` can be defined as: ``boundary1 = [x0,y0, x1,y1, x2,y2, x3,y3, x0,y0]``, where the ***interior*** of the loop is the ***interior*** of the shape.
+
+> If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape***.
+
+
+An example is provided in ``custom_poker_meshing.cc``. Here, we have one boundary. First, we have ``boundaryx`` and ``boundaryy`` storing the $x$ and $y$ coordinates of the shape boundary. Notice that the coordinates form a closed loop with the same end point. In a ``for`` loop, we store the coordinates in the boundary vector ``boundary1``, in the format ``boundary1 = [x0,y0, x1,y1, ..., x0,y0]``. We also keep a count of the number of boundary line segments ``bdry_ct``. 
+
+Then, we store ``boundary1`` into the viariable ``boundaries``. 
+
+```c++
+//Define a shape from custom contour line segments
+    double boundaryx[117]={ 0.585 , ... , 0.585};
+    double boundaryy[117]={ 0.0284, ... , 0.0284};
+    std::vector<std::vector<double>> boundaries;
+    std::vector<double> boundary1;
+    int bdry_ct=0;
+    for(int i=116;i>=0;i--){
+        boundaryx[i]=boundaryx[i];
+        boundaryy[i]=boundaryy[i];
+        boundary1.push_back(boundaryx[i]);
+        boundary1.push_back(boundaryy[i]);
+        bdry_ct++;
+    }
+    boundaries.push_back(boundary1);
+```
+
+In this code, we also distinguish a few different parallel number of threads of use. Note that this is optional - for simplicity, one can as well just use the same number of parallel threads throughout the code. 
+
+``num_t_meshing`` is the number of threads to use during the actually meshing procedure. ``num_t_setup`` is the number of threads to use when we are setting up the shape, container, and sizing field, etc, before the actual meshing. ``num_t_setup_cshp`` is the number of threads to use specifically for the custom shape creation. If there are only a small number of boundary line segments ``bdry_ct``, then we may set ``num_t_setup_cshp=1``, to avoid parallel overhead. But when there are a large number of boundary line segments, then we may set ``num_t_setup_cshp=num_t_setup``. Here, an arbitraty threshold of $200$ is used. 
+
+```c++
+      int num_t_meshing=2*physical_core;
+      int num_t_setup=physical_core;
+      //for custom_shape_2d: if the boundary contour line segments count is small, we use serial code nt=1 to avoid parallel overhead
+      int num_t_setup_cshp=1; 
+      if(bdry_ct>200){
+            num_t_setup_cshp=num_t_setup;
+      }
+```
+
+In the shape creation, 
+
+```c++
+      //final test shape, complicated poker shape
+      bool normalize_model=true;
+      shape_2d_contour_lines shp1(con,num_t_setup,num_t_setup_cshp,boundaries,normalize_model);
+      shape_2d_circle shp2(con,num_t_setup,0.1,0.5,0.7);
+      shape_2d_difference shp(con,num_t_setup,&shp1,&shp2);
+```
 
 
 
