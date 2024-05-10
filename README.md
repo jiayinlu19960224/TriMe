@@ -569,7 +569,13 @@ We can also define our shape using the contour line segments of the shape. The l
 > If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape***.
 
 
-An example is provided in ``custom_poker_meshing.cc``. Here, we have one boundary. First, we have ``boundaryx`` and ``boundaryy`` storing the $x$ and $y$ coordinates of the shape boundary. Notice that the coordinates form a closed loop with the same end point. In a ``for`` loop, we store the coordinates in the boundary vector ``boundary1``, in the format ``boundary1 = [x0,y0, x1,y1, ..., x0,y0]``. We also keep a count of the number of boundary line segments ``bdry_ct``. 
+An example is provided in ``custom_poker_meshing.cc``. Here is the mesh it produces:
+
+<p align="center">
+<img src="/docs/custom_shape_contour_line_seg.png" width="400" />
+</p>
+
+Here, we have one boundary. First, we have ``boundaryx`` and ``boundaryy`` storing the $x$ and $y$ coordinates of the shape boundary. Notice that the coordinates form a closed loop with the same end point. In a ``for`` loop, we store the coordinates in the boundary vector ``boundary1``, in the format ``boundary1 = [x0,y0, x1,y1, ..., x0,y0]``. We also keep a count of the number of boundary line segments ``bdry_ct``. 
 
 Then, we store ``boundary1`` into the viariable ``boundaries``. 
 
@@ -604,7 +610,24 @@ In this code, we also distinguish a few different parallel number of threads of 
       }
 ```
 
-In the shape creation, 
+In the shape creation, we can create an ``shape_2d_contour_lines`` for our custom shape defined by the shape boundaries. Let's first take a look at parts of the constructor of the class below. We see that it is a derived class from the base class ``shape_2d``, therefore, it needs to take as input parameters ``container_2d &con_`` and ``int num_t_``, which are used to initiate the base class ``shape_2d``. Furthermore, an input parameter ``int num_t_cshp_`` is needed to create the custom shape. The variable ``std::vector<std::vector<double>> boundaries_`` is also required, which has the shape boundaries information. Lastly, a boolean variable ``bool normalize_model_`` is required, which indicates whether to normalize the model. If true, the model will be translated to fit and centered into the container domain, and the model will be scaled. Suppose the container domain size is ``[ax, bx] x [ay, by]``, with side length ``Lx = bx-ax``, ``Ly = by-ay``. The model will be scaled so that its longest dimension fits in ``[ax+0.1*Lx, ax+0.9*Lx] x [ay+0.1*Ly, ay+0.9*Ly]``. 
+
+```c++
+/**
+* Constructor for shape_2d_contour_lines, a custom shape defined by user-input contour line segments.
+*
+* @param con_ The container_2d object.
+* @param num_t_ Number of parallel threads.
+* @param num_t_cshp_ Number of parallel threads for the custom shape.
+* @param boundaries_ A vector of vectors representing the contour line segments of the shape.
+* @param normalize_model_ Flag indicating whether to normalize the model.
+*/
+shape_2d_contour_lines(container_2d &con_, int num_t_, int num_t_cshp_, std::vector<std::vector<double>> boundaries_, bool normalize_model_):shape_2d(con_,num_t_),
+cshp(custom_shape_2d(boundaries_, con_.ax, con_.bx, con_.ay, con_.by, normalize_model_,num_t_cshp_))
+{...}
+```
+
+Based on the constructor description, we can create our custom shape as follows. We first feed in the ``boundaries`` to the ``shape_2d_contour_lines`` object, and require it to normalize the model. We also make a hollow circule inside the shape. 
 
 ```c++
       //final test shape, complicated poker shape
@@ -613,6 +636,27 @@ In the shape creation,
       shape_2d_circle shp2(con,num_t_setup,0.1,0.5,0.7);
       shape_2d_difference shp(con,num_t_setup,&shp1,&shp2);
 ```
+
+The following code are similar. Except that, since we want to use a different number of parallel threads for the meshing, we use the function ``mesh_method.change_number_thread(num_t_meshing)`` to properly set the number of threads in the code before doing the actual meshing. 
+
+```c++
+if(method_ind==0){
+         mesh_alg_2d_dm mesh_method(&pm2d);
+         mesh_method.change_number_thread(num_t_meshing);
+         pm2d.meshing(&mesh_method); 
+    }
+    else if(method_ind==1){
+         mesh_alg_2d_cvd mesh_method(&pm2d);
+         mesh_method.change_number_thread(num_t_meshing);
+         pm2d.meshing(&mesh_method); 
+    }
+    else if(method_ind==2){
+         mesh_alg_2d_hybrid mesh_method(&pm2d);
+         mesh_method.change_number_thread(num_t_meshing);
+         pm2d.meshing(&mesh_method); 
+    }
+```
+
 
 
 

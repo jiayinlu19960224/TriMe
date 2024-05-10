@@ -64,11 +64,11 @@ int main() {
     int physical_core=4; //Specify number of physical cores in the computer. 
     int method_ind=2; //Method index, 0 DM; 1 CVD; 2 Hybrid
     int Ntotal=5000; //Number of vertices in the mesh
-    double K=0; //0.005; 0:uniform sizing field
+    double K=0.1; //0.005; 0:uniform sizing field
     int output_interval=-1; //File output, int: 0, no output; -1, last final output; 10, every 10 triangulations output
 
 
-    int num_t_max=2*physical_core;
+    int num_t_meshing=2*physical_core;
     int num_t_setup=physical_core;
     //for custom_shape_2d: if the boundary contour line segments count is small, we use serial code nt=1 to avoid parallel overhead
     int num_t_setup_cshp=1; 
@@ -122,17 +122,17 @@ int main() {
     printf("meshing\n");
    if(method_ind==0){
          mesh_alg_2d_dm mesh_method(&pm2d);
-         mesh_method.change_number_thread(num_t_setup);
+         mesh_method.change_number_thread(num_t_meshing);
          pm2d.meshing(&mesh_method); 
     }
     else if(method_ind==1){
          mesh_alg_2d_cvd mesh_method(&pm2d);
-         mesh_method.change_number_thread(num_t_setup);
+         mesh_method.change_number_thread(num_t_meshing);
          pm2d.meshing(&mesh_method); 
     }
     else if(method_ind==2){
          mesh_alg_2d_hybrid mesh_method(&pm2d);
-         mesh_method.change_number_thread(num_t_setup);
+         mesh_method.change_number_thread(num_t_meshing);
          pm2d.meshing(&mesh_method); 
     }
 
