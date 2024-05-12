@@ -10,7 +10,7 @@ lflags=-L$(v2d) -L$(tm2d)
 src=$(patsubst %.o,%.cc,$(objs))
 
 # List of executables
-execs= primitive_shape_meshing_boolean_sdf primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing parallel_meshing_2d_main parallel_meshing_2d_main_fixed_point parallel_meshing_2d_main_mapping
+execs= primitive_shape_meshing_change_num_threads North_America_map_meshing primitive_shape_meshing_own_sdf primitive_shape_meshing_boolean_sdf primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing 
 
 # Makefile rules
 all:
@@ -25,6 +25,15 @@ depend:
 
 -include Makefile.dep
 
+North_America_map_meshing: North_America_map_meshing.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
+
+primitive_shape_meshing_change_num_threads: primitive_shape_meshing_change_num_threads.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
+	
+primitive_shape_meshing_own_sdf: primitive_shape_meshing_own_sdf.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
+
 primitive_shape_meshing_boolean_sdf: primitive_shape_meshing_boolean_sdf.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
@@ -37,14 +46,6 @@ primitive_shape_meshing: primitive_shape_meshing.cc $(objs)
 custom_poker_meshing: custom_poker_meshing.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
-parallel_meshing_2d_main: parallel_meshing_2d_main.cc $(objs)
-	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
-
-parallel_meshing_2d_main_fixed_point: parallel_meshing_2d_main_fixed_point.cc $(objs)
-	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
-
-parallel_meshing_2d_main_mapping: parallel_meshing_2d_main_mapping.cc $(objs)
-	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
 %.o:%.cc
 	$(cxx) $(cflags) $(iflags) -c $<

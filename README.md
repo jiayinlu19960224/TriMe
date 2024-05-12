@@ -356,6 +356,27 @@ Customization
 ---------------
 ### Changing number of parallel threads
 
+Sometimes we may get a better performance by setting different numbers of parallel threads for setting up and for the actual meshing. To do so, we can follow the implementation provided in ``primitive_shape_meshing_change_num_threads.cc``. The code structure is similar to the basic example. Here are the few differences we need to make: 
+
+Firstly, we specify two different numbers of parallel threads to use, for setting up and for the actual meshing. 
+```c++
+    //Specify number of parallel threads for setting up and the actual meshing
+    int num_t_setup=4;
+    int num_t_mesh=8;
+```
+
+In creating the container, shape, sizing field, and the parallel_meshing_2d class object, we use ``num_t_setup``. 
+
+Then, in the parallel meshing part, we call ``mesh_method.change_number_thread(num_t_mesh);`` before the actual meshing, to properly switch to using ``num_t_mesh`` threads. For example, for the DistMesh meshing method,
+
+```c++
+      mesh_alg_2d_dm mesh_method(&pm2d);
+      //Call this function to properly switch to using num_t_mesh threads for meshing
+      mesh_method.change_number_thread(num_t_mesh);
+      pm2d.meshing(&mesh_method); 
+```
+
+
 ### User-defined sizing field
 In the basic example above, the (triangle) element sizing field was calculated automatically, based on the mesh gradation parameter $K$, using the <code>sizing_2d_automatic</code> sizing field object. A possible customization is that users may define their own sizing field function. 
 
@@ -577,6 +598,7 @@ We can also define our shape using the contour line segments of the shape. The l
 
 > If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape.
 
+***Example 1: Custom poker***
 
 An example is provided in ``custom_poker_meshing.cc``. Here is the mesh it produces:
 
@@ -666,8 +688,11 @@ if(method_ind==0){
     }
 ```
 
+***Example 2: North America geography map***
 
-Another example: NA map...
+
+
+
 
 ### Setting fixed points in the mesh
 
