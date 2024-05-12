@@ -129,7 +129,7 @@ int main() {
      }
      //Option 1: Use the same normalization (scale + translation) on the fixed points as in shp1
      pm2d.add_fixed_points_normailze(Nfixed, &shp1, fixed_pt_list);
-     //Option 2: Simple add in the points as they are as fixed points
+     //Option 2: Simply add in the points as they are as fixed points
      //pm2d.add_fixed_points(Nfixed, fixed_pt_list);
 
      pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
