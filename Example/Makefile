@@ -10,7 +10,7 @@ lflags=-L$(v2d) -L$(tm2d)
 src=$(patsubst %.o,%.cc,$(objs))
 
 # List of executables
-execs= primitive_shape_meshing_change_num_threads North_America_map_meshing primitive_shape_meshing_own_sdf primitive_shape_meshing_boolean_sdf primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing 
+execs= custom_poker_add_fixed_pts_meshing primitive_shape_meshing_change_num_threads North_America_map_meshing primitive_shape_meshing_own_sdf primitive_shape_meshing_boolean_sdf primitive_shape_meshing_sizing_function primitive_shape_meshing custom_poker_meshing 
 
 # Makefile rules
 all:
@@ -41,6 +41,9 @@ primitive_shape_meshing_sizing_function: primitive_shape_meshing_sizing_function
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
 primitive_shape_meshing: primitive_shape_meshing.cc $(objs)
+	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
+
+custom_poker_add_fixed_pts_meshing: custom_poker_add_fixed_pts_meshing.cc $(objs)
 	$(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
 
 custom_poker_meshing: custom_poker_meshing.cc $(objs)

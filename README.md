@@ -696,6 +696,36 @@ if(method_ind==0){
 
 ### Setting fixed points in the mesh
 
+We can also add a list of fixed points into the mesh. These points stays at the some positions throughout the meshing procedure. An example implementation is provided based on the custom poker shape meshing code, in ``custom_poker_add_fixed_pts_meshing.cc``. 
+
+
+Once we created the ``parallel_meshing_2d pm2d`` class object, we add the fixed points in. As shown in the following, we first create a list of the fixed point coordinates, with format ``[x0 y0 x1 y1 ...]``. To add them into the mesh, 
+> One option is to call ``pm2d.add_fixed_points_normailze(Nfixed, &shp1, fixed_pt_list)``, which perform the same normalization (scale + translation) on the fixted points as the ``shape_2d`` object ``shp1``. Note that only shapes built from shape contour line segments, ``shape_2d_contour_lines`` class objects, has the normalization object at initialization. Therefore, this option to normalize the fixed points is only relevant for ``shape_2d_contour_lines`` shape objects. 
+
+> Another option is to use ``pm2d.add_fixed_points(Nfixed, fixed_pt_list)``, which simple adds the points as they are into the mesh as fixed points. 
+
+```c++
+     //Add fixed points into the mesh
+     int Nfixed=10; //Number of fixed points
+     //Coordinates of the fixed points stored into a list
+     double *fixed_pt_list=new double[2*Nfixed];
+     double fixed_pt_x[Nfixed]={0.2,0.3,0.4,0.2,0.2,0.5,0.5,0.7,0.7,0.7};
+     double fixed_pt_y[Nfixed]={0.2,0.3,0.4,0.3,0.4,0.6,0.1,0.4,0.3,0.2};
+     //The fixed point list has format [x0, y0, x1, y1, ...]
+     for(int i=0;i<Nfixed;i++){
+        fixed_pt_list[2*i]=fixed_pt_x[i];
+        fixed_pt_list[2*i+1]=fixed_pt_y[i];
+     }
+     //Option 1: Use the same normalization (scale + translation) on the fixed points as in shp1
+     pm2d.add_fixed_points_normailze(Nfixed, &shp1, fixed_pt_list);
+     //Option 2: Simple add in the points as they are as fixed points
+     //pm2d.add_fixed_points(Nfixed, fixed_pt_list);
+```
+
+After adding fixed points, we can initialize meshing points as follows. Notice that here, the total number of meshing points, ``Ntotal`` equals to the sum of the number of fixed points and the number of unfixed points. 
+```c++
+pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
+```
 
 Performance
 ================================================
