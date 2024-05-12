@@ -724,7 +724,7 @@ Once we created the ``parallel_meshing_2d pm2d`` class object, we add the fixed 
 
 After adding fixed points, we can initialize meshing points as follows. Notice that here, the total number of meshing points, ``Ntotal`` equals to the sum of the number of fixed points and the number of unfixed points. 
 ```c++
-pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
+     pm2d.pt_init(Ntotal); //Ntotal=Nfix+Nmove: total number of fixed and unfixed points in the mesh
 ```
 
 Performance
