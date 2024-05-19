@@ -156,9 +156,14 @@ Let's now look at the code in detail in <code>primitive_shape_meshing.cc</code>.
 On the top, use <code>#include "parallel_meshing_2d.hh"</code> to import the <span style="font-variant:small-caps;">TriMe++</span> code. 
 
 In the main code, these few lines at the beginning of the code specify:
-- <code>num_t</code>: The number of parallel threads to use.
+- <code>num_t</code>: The number of parallel threads to use. 
+  >Best efficient performance is reached when the number of threads $\leq$ the number of physical cores in the computer.
+  
+  >When the number of threads is more than that, we can usually still get improvement in computation time, just less efficient. 
+  
+  >It is recommended that the number of threads is never more than twice the number of physical cores. 
 - <code>method_ind</code>: The meshing algorithm to use. $0$ DistMesh; $1$ CVD; $2$ Hybrid.
-- <code>Ntotal</code>: The total number of meshing points.
+- <code>Ntotal</code>: The total number of meshing points specified. At meshing termination, we employed a procedure to [delete problematic points from the mesh](#may-19th-2024-delete-problematic-vertices-at-termination). Therefore, the final mesh number of points is $\leq$ ``Ntotal``. 
 - <code>K</code>: Adaptivity of mesh. $0$ Uniform; $>1$ Adaptive; Larger <code>K</code> increases the adaptivity of mesh.
 - <code>output_interval</code>: File output frequency. 
   >$0$ No output; 
@@ -691,8 +696,19 @@ if(method_ind==0){
 
 ***Example 2: North America geography map***
 
+Another example is meshing on the North America geography map:
 
+![NA mesh plot](/docs/north_america_map_mesh_plot.jpg)
 
+The mesh is generated using the file ``North_America_map_meshing.cc``. To obtain the shape, we first read in the contour line segments in the file ``north_america_single_bdry_xy.txt``, and store them in the variable ``boundaries``. Each **line** in ``north_america_single_bdry_xy.txt`` gives a boundary of the shape, in the format: ``[x0 y0 x1 y1 ... xk yk ... x0 y0]``
+
+After we define the shape from the contour line segments, we follow the similar procedure as before to obtain the mesh. 
+
+A few comments:
+
+- The time it takes to initialize the shape is relatively long here. This is because, in creating the shape, we build an underlying geometry grid, where each grid cell is categorized as inner/boundary/outer grid. In this process, each grid cell need to computer their center signed distance, which is expensive, since we have a highly detailed geometry. The calculation will be improved in the near future. We will implement a quad-tree structure for the geometry grid, to avoid computing the signed distance for every grid cell. 
+
+- The mesh has good quality overall. In this testing, we obtain $19851$ vertices and $35972$ triangles, with median aspect and edge ratios to be $1.03383$ and $1.2194$, respectively. We see some meshing inaccuracy along the shape boundary, up to the resolution of the local triangle sizes. 
 
 
 ### Setting fixed points in the mesh
@@ -736,7 +752,18 @@ Performance
 
 Code updates
 ================================================
-Oct 19th, 2023: 
+
+### May 19th, 2024: Delete problematic vertices at termination
+1. At termination, we check for any problematic vertices, defined as: 
+      - Single vertice not incident to any triangles in the mesh. 
+      - Vertices incident to any single triangle not connected to any other triangles. 
+      - Vertices connected to more than two boundary edges. 
+
+      In a while loop, we search and delete these vertices, until no more problematic vertices are left. 
+
+      Therefore, the final mesh may have $\leq$ ``Ntotal`` number of vertices that we specified. This choice is made for better mesh qualities. 
+
+### Oct 19th, 2023: Half-edge data structure; Fixed points input
 
 1. Added in fixed point input for meshing with fixed points.
 
