@@ -151,7 +151,7 @@ namespace voro {
      * @brief The factor used in adding walls to Voronoi cells:
      *        Construct a regular octagon with height and width: voro_wall_fac*hi.
      */
-    const double voro_wall_fac=5.0;
+    const double voro_wall_fac=3.0;
 
     /**
      * @brief The factor used in the valid triangle criteria:

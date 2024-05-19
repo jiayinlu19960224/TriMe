@@ -318,12 +318,19 @@ namespace voro {
         HE_vert* Vertices; /**< The vertices in the triangulation. */
         std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> Bdry_Edges; /**< The boundary edges. Key: u; Value: <v,0/1>. 0/1 means have been connected with another bdry edge or not. */
         std::vector<std::pair<unsigned int, unsigned int>> Bdry_Edges_Start; /**< The starting HE of the boundaries. Each boundary has one. */
+        
+        // A few temporary variables used in HE structure 
+        std::vector<std::vector<int>> eu_bdry_connect; //Vector: [index] ev1, (ev2)
+        std::unordered_map<int,int> eu_bdry_ind; //Mapping: key: eu ---- Value: index
+        std::vector<int> eu_problematic; //problematic eu's: Vector: eu1,eu2,eu3...
+
         /**
          * @brief Construct the Half-edge data structure for the triangulation.
          *      The boundary HE are those with NULL face pointer.
          *      Requires tria_vertex to have been stored in the voro-tria calculation.
          */
-        void construct_HE();
+        void construct_HE_step1();
+        void construct_HE_step2();
         void print_bdry_CCW(const char *file_name_prefix);
 
         //add_pt and termination criteria

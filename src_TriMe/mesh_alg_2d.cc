@@ -498,8 +498,8 @@ void mesh_alg_2d::print_tria_quality_stat_overall(const char *file_name_prefix){
     sprintf(bug2,"%s_tria_quality_stat_overall.txt",file_name_prefix);
     FILE *outFile2 = fopen(bug2, "a");
 
-    fprintf(outFile2,"%d %d %g %g %g %g %g %g %g %g %g %g \n",
-    	tria_iter_ct, tria_ct,
+    fprintf(outFile2,"%d %d %d %g %g %g %g %g %g %g %g %g %g \n",
+    	tria_iter_ct, Ntotal, tria_ct,
     	max_tria_ar,max_tria_er,
     	median_tria_ar, median_tria_er,
     	mean_tria_ar,mean_tria_er,
@@ -587,7 +587,6 @@ void mesh_alg_2d::print_bdry_CCW(const char *file_name_prefix){
 
 }
 
-
 /**
  * @brief Prints various outputs related to particle coordinates, triangle bar coordinates, and Voronoi diagrams.
  */
@@ -669,28 +668,34 @@ bool mesh_alg_2d::valid_tria(double x0,double y0,double x1,double y1,double x2,d
 		if(pm2d->sdf_adf(cen_x,cen_y)>get_bgrid_geps(cen_x,cen_y)){return false;}
 	}
 
-
 	//test 2: after test 1, we know the remaining trias to test all have all vertices and centroid in/on geometry.
 	//Next, we test if at least two edges midpoints <=geps, return true
-	double e01x=0.5*(x0+x1);double e01y=0.5*(y0+y1);
-	double e02x=0.5*(x0+x2);double e02y=0.5*(y0+y2);
-	double e12x=0.5*(x1+x2);double e12y=0.5*(y1+y2);
+	double e01x=0.5*(x0+x1);double e01y=0.5*(y0+y1); 
+	double e02x=0.5*(x0+x2);double e02y=0.5*(y0+y2); 
+	double e12x=0.5*(x1+x2);double e12y=0.5*(y1+y2); 
+
 	int edge_in_geo_ct=0;
-	if(geo_grid(e01x,e01y)<0){edge_in_geo_ct++;}
+	if(geo_grid(e01x,e01y)<0){
+		edge_in_geo_ct++;
+	}
 	else if(geo_grid(e01x,e01y)>0 && geo_grid(e01x,e01y)<=gnxy){
 		if(pm2d->sdf_adf(e01x,e01y)<=get_bgrid_geps(e01x,e01y)){
 			edge_in_geo_ct++;
 		}
 	}
 
-	if(geo_grid(e02x,e02y)<0){edge_in_geo_ct++;}
+	if(geo_grid(e02x,e02y)<0){
+		edge_in_geo_ct++;
+		}
 	else if(geo_grid(e02x,e02y)>0 && geo_grid(e02x,e02y)<=gnxy){
 		if(pm2d->sdf_adf(e02x,e02y)<=get_bgrid_geps(e02x,e02y)){
 			edge_in_geo_ct++;
 		}
 	}
 
-	if(geo_grid(e12x,e12y)<0){edge_in_geo_ct++;}
+	if(geo_grid(e12x,e12y)<0){
+		edge_in_geo_ct++;
+	}
 	else if(geo_grid(e12x,e12y)>0 && geo_grid(e12x,e12y)<=gnxy){
 		if(pm2d->sdf_adf(e12x,e12y)<=get_bgrid_geps(e12x,e12y)){
 			edge_in_geo_ct++;
@@ -700,7 +705,7 @@ bool mesh_alg_2d::valid_tria(double x0,double y0,double x1,double y1,double x2,d
 		return true;
 	}
 	
-	//test 4: 
+	//test 3: 
 		//find circumcenter of triangle
 			//if circumcenter in outer grid, return false
 			//else
@@ -1408,6 +1413,7 @@ void mesh_alg_2d::determine_Continue_tria_quality(){
             Continue=true;
         }
     }
+
     if(Continue==false){printf("\nquality stop \n");}
 }
 
@@ -2172,6 +2178,7 @@ t_add_pt+=omp_get_wtime()-t1;
 				addPt=false;
 				printf("added pts. now: %d points; all_iter_ct %d tria_iter_ct %d \n", Ncurrent, all_iter_ct,tria_iter_ct);
 			}
+
 			//Voronoi computation
 				//triangle extraction, triangle ct
 				//tria quality calculation
@@ -2180,7 +2187,6 @@ t_add_pt+=omp_get_wtime()-t1;
 double t2=omp_get_wtime();
 			voro_compute_retria_extract_info();
 t_voro_computation+=omp_get_wtime()-t2;
-//print_tria_quality_stat_overall();
 			reTria=false;
 
 			//test triangle quality stopping criteria
@@ -2206,9 +2212,6 @@ double t3=omp_get_wtime();
 			update_pt_position_and_determine_reTria();
 t_update_pt_position+=omp_get_wtime()-t3;
 
-//printf("finished update points, new check \n");
-//pm2d->check_pt_ctgr();
-
 			//test stopping criteria: if all points movement small in this meshing iteration, stop
 			if(Ncurrent==Ntotal){
 				determine_Continue_pt_movement();
@@ -2232,9 +2235,12 @@ t_algorithm_all_non_voro+=(t4-t0-t_voro_computation);
 
 
 /**
- * @brief Perform the final meshing iteration.
+ * @brief Perform the final meshing iteration. 
+ * Check for problematic vertices, and delete them if found; Repeat until no problematic vertices exist anymore in the mesh. 
+ * Problematic vertices are defined as vertices that: form a single triangle not connected to any other triangles; 
+ * single vertex not connected to any triangles; vertex that are connected to more than 2 boundary edges. 
  *
- * This function performs the final meshing iteration. It involves the following steps:
+ * Afterwards, the function performs the final meshing iteration. It involves the following steps:
  * - Increment the tria_iter_ct counter.
  * - Call the determine_printOutputs function to determine if the outputs need to be printed.
  * - Perform the last round of retriangulation and store triangle information if necessary.
@@ -2242,59 +2248,102 @@ t_algorithm_all_non_voro+=(t4-t0-t_voro_computation);
  * - Output the results if necessary.
  */
 void mesh_alg_2d::meshing_final(){
-double t0=omp_get_wtime();
-	tria_iter_ct++;
-	determine_printOutputs();
+	printf("Final meshing!\n");
 
-	//last round of retriangulation, and store triangle info for print out later
-	bool store_barid=false;
-	bool store_triangle_quality=false;
-	bool store_tria_vertex=false;
-    bool store_tria_centroid=false;
-    bool store_ccrd_h_ratio=false;
-    bool store_max_tria_ar=false;
-    bool cvd_pt_update=false;
-    bool store_xy_id=false;
-    double *dummy_array=new double[1];
-    if(printOutputs==true){
-		//store_barid=true;
-		store_triangle_quality=true;
-		store_tria_vertex=true;
+	double t0=omp_get_wtime();
+	double ftvoro=0.0;
+
+	bool fix_bad_vertices=true;
+	while(fix_bad_vertices){
+		tria_iter_ct++;
+		//Final few triangulation iterations catching problematic boundary vertices (through the HE data structure), 
+		//and re-distributing them to the centroid of worst triangles
+		bool store_triangle_quality=true;
+		bool store_tria_vertex=true;
+
+	    bool store_tria_centroid=false;
+	    bool store_ccrd_h_ratio=false;
+	    bool store_barid=false;
+	    bool store_max_tria_ar=false;
+	    bool cvd_pt_update=false;
+	    bool store_xy_id=false;
+	    double *dummy_array=new double[1];
+
+	    double t1=omp_get_wtime();
+	    voro_compute_and_store_info(store_barid,store_triangle_quality,
+			store_tria_vertex,
+			store_tria_centroid,
+			store_ccrd_h_ratio, store_max_tria_ar,
+			cvd_pt_update,
+			store_xy_id,dummy_array);
+	    double t2=omp_get_wtime();
+	    ftvoro+=t2-t1;
+	
+	    delete [] dummy_array;
+
+	    construct_HE_step1();
+
+	    if((signed int)eu_problematic.size()==0){
+	    	fix_bad_vertices=false;
+	    }
+	    else{
+
+	    	//FIX: delete problematic vertices in the mesh. 
+	    	int pt_FIX_ct=0;
+	    	bool continue_FIX=true;
+	    	int iii=eu_problematic[0];
+
+	    	while(continue_FIX){
+	    		int siii=iii+pt_FIX_ct;
+	    		while(siii==eu_problematic[pt_FIX_ct]){
+	    			siii++;
+	    			pt_FIX_ct++;
+	    		}
+	    		if(siii<Ntotal){
+	    			pm2d->xy_id[2*iii]=pm2d->xy_id[2*siii];
+		    		pm2d->xy_id[2*iii+1]=pm2d->xy_id[2*siii+1];
+		    		iii++;
+	    		}
+	    		else{
+	    			continue_FIX=false;
+	    		}
+	    	}
+	    	Ntotal-=(signed int)eu_problematic.size();
+	    	Ncurrent=Ntotal;
+	    	pm2d->Ncurrent=Ncurrent;
+	    	pm2d->Ntotal=Ntotal;
+	    }
+
 	}
-double t1=omp_get_wtime();
-	voro_compute_and_store_info(store_barid,store_triangle_quality,
-		store_tria_vertex,
-		store_tria_centroid,
-		store_ccrd_h_ratio, store_max_tria_ar,
-		cvd_pt_update,
-		store_xy_id,dummy_array);
-double t2=omp_get_wtime();
-t_voro_computation+=t2-t1;
 
-	delete [] dummy_array;
+	construct_HE_step2();
 
 	//output
+	determine_printOutputs();
 	if(printOutputs==true){
-		construct_HE();
 		do_print_final_outputs();
 	}
-double t3=omp_get_wtime();
-//print_tria_quality_stat_overall();
-t_algorithm_all_non_voro+=(t3-t0-(t2-t1));
+
+	double t3=omp_get_wtime();
+	t_voro_computation+=ftvoro;
+	t_algorithm_all_non_voro+=(t3-t0-ftvoro);
+
+	printf("Final mesh: %d vertices; %d triangles \n", Ntotal, tria_ct);
 }
+
 
 /**
  * @brief Construct the Half-edge data structure for the triangulation.
  * 		  The boundary HE are those with NULL face pointer.
  * 		  Requires tria_vertex to have been stored in the voro-tria calculation.
  */
-void mesh_alg_2d::construct_HE(){
+void mesh_alg_2d::construct_HE_step1(){
 
 printf("constructing HE\n");
 	//clear barid storage to avoid redundancy in storage space
-	delete [] barid;
-	barid=new int[2*1];
-	barid_barct=1;
+	//delete [] barid;
+	//barid=new int[2*1];
+	//barid_barct=1;
 	
 	//Initialize variables
 	Edges.clear();
@@ -2377,230 +2426,67 @@ printf("B\n");
 	//First, find vertices v with >1 (with 2) outgoing bdry edges (i.e. connecting to 4 bdry HE)
 	//Obtain boundary edges connectivity: bdry HE prev and next
 	//Loop through all edges and obtain the bdry HE's
-	std::vector<std::vector<int>> eu_bdry_connect; //Vector: [index] ev1, (ev2)
-	std::unordered_map<int,int> eu_bdry_ind; //Mapping: key: eu ---- Value: index
-	std::vector<int> eu_problematic; //problematic eu's: Vector: eu1,eu2,eu3...
+
+	//clear memory of intermediate variables
+	eu_bdry_connect.clear();
+	eu_bdry_ind.clear();
+	eu_problematic.clear(); 
+
+printf("Problematic vertices: ");
 	int bdry_ind=0;
 	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
-		if(Edges[itr_e->first]->face==NULL){
+		if(itr_e->second->face==NULL){
 			int eu=itr_e->second->eu;
 			int ev=itr_e->second->ev;
+			bool problem_stored=false;
 			if(eu_bdry_ind.find(eu)==eu_bdry_ind.end()){
 				eu_bdry_ind[eu]=bdry_ind++;
 				std::vector<int> bdry_ind_temp; bdry_ind_temp.push_back(ev);
 				eu_bdry_connect.push_back(bdry_ind_temp);
 			}
 			else{
+				//check if stored, so that eu_problematic has unique values
+				if((signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()==1){
+					eu_problematic.push_back(eu);
+				}
 				eu_bdry_connect[eu_bdry_ind[eu]].push_back(ev);
-				eu_problematic.push_back(eu);
+				printf("%d ", eu);
+				problem_stored=true;
 			}
-		}
-	}
 
-
-	//loop through the problematic vertices
-	for(int i=0;i<(signed int)eu_problematic.size();i++){
-printf("HERE O\n");
-		//Loop through the connecting incoming edges and the corresponding triangle
-		bool have_deleted=false; //only delete one of the connecting triangles
-		int eu=eu_problematic[i];
-		if((signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()>2){
-			printf("ERROR: more than 4 bdry half edge connecting to a single bdry vertex %d (%g %g)!\n %d \n nei: %d (%g %g), %d(%g %g)\n", 
-				eu, current_x(eu),current_y(eu),
-				eu_bdry_connect[eu_bdry_ind[eu]].size(), 
-				eu_bdry_connect[eu_bdry_ind[eu]][0], current_x(eu_bdry_connect[eu_bdry_ind[eu]][0]),current_y(eu_bdry_connect[eu_bdry_ind[eu]][0]),
-				eu_bdry_connect[eu_bdry_ind[eu]][1], current_x(eu_bdry_connect[eu_bdry_ind[eu]][1]),current_y(eu_bdry_connect[eu_bdry_ind[eu]][1])
-
-				);
-			throw std::exception();
-		}
-		//delete a single triangle who two edges are bdry edges and connecting to the vertex
-		for(int ej=0;ej<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ej++){
-			if(have_deleted==false){
-printf("HERE A\n");
-				int ev=eu_bdry_connect[eu_bdry_ind[eu]][ej];
-				//check if the pair edge's Next is the pair edge of another (a)bdry edge and (b)connecting to vertec eu
-				if(Edges[KKey(eu,ev)]->pair->next->pair->face==NULL){
-					//Delete the triangle associated with the Pair HE of eu,ev.
-					//And move the last triangle to the slot
-					int problem_tria_id=Edges[KKey(eu,ev)]->pair->face->HE_face_id;
-					int problem_tria_id3=3*problem_tria_id;
-					int last_tria_id=tria_ct-1;
-					int last_tria_id3=3*last_tria_id;
-					tria_vertex[problem_tria_id3]=tria_vertex[last_tria_id3];
-					tria_vertex[problem_tria_id3+1]=tria_vertex[last_tria_id3+1];
-					tria_vertex[problem_tria_id3+2]=tria_vertex[last_tria_id3+2];
-
-					//Update triangle ct
-					tria_ct--;
-
-					//Update the HE data strcuture: Faces, Edges, Vertices
-					Faces[problem_tria_id].HE_face_id=last_tria_id;
-					Faces[problem_tria_id].edge=Faces[last_tria_id].edge;
-
-					//Delete HE (eu,ev) (ev,eu) (eu,ev2) (ev2,eu)
-					int ev2=Edges[KKey(eu,ev)]->pair->next->ev;
-					//Make new bdry HE
-					Edges[KKey(eu,ev)]->pair->next->next->face=NULL;
-					Edges[KKey(eu,ev)]->pair->next->next->prev=NULL;
-					Edges[KKey(eu,ev)]->pair->next->next->next=NULL;
-					//Erase deleted triangle edges
-					Edges.erase(KKey(eu,ev));
-					Edges.erase(KKey(ev,eu));
-					Edges.erase(KKey(eu,ev2));
-					Edges.erase(KKey(ev2,eu));
-
-					int ejj=ej+1; if(ejj>=(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()){ejj=0;}
-					Vertices[eu].edge=Edges[KKey(eu,eu_bdry_connect[eu_bdry_ind[eu]][ejj])];
-					Vertices[ev].edge=Edges[KKey(ev,ev2)];
-					Vertices[ev2].edge=Edges[KKey(ev2,ev)];
-
-					//Change the flag to signal a connecting triangle has been deleted.
-					have_deleted=true;
-
-
+			//check if stored, so that eu_problematic has unique values
+			if(problem_stored==false){
+				//Vertices incident to a single triangle not connected to other triangles are problematic vertices as well. 
+				if(itr_e->second->pair->next->pair->face==NULL 
+					&& 
+					itr_e->second->pair->prev->pair->face==NULL){
+					eu_problematic.push_back(eu);
 				}
-			}
-		}
-		//No single triangle found; 
-		//Simply delete all triangles bounded by two bdry edges on one side connecting to the vertex
-		//PS. choose the side with less number of triangles
-		if(have_deleted==false){
-
-printf("HERE B\n");
-			int ej_chose=0;
-			int e_tria_ct_min=100;
-			for(int ejjj=0;ejjj<(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size();ejjj++){
-				int evvv=eu_bdry_connect[eu_bdry_ind[eu]][ejjj];
-				//count the number of triangles on this side:
-				int e_tria_ct=1;
-				HE_edge *checkE=Edges[KKey(eu,evvv)]->pair->next->pair;
-				while(checkE->face!=NULL){
-					checkE=checkE->next->pair;
-					e_tria_ct++; printf("!!!\n");
-				}
-				if(e_tria_ct<e_tria_ct_min){e_tria_ct_min=e_tria_ct;ej_chose=ejjj;}
-			}
-			printf("triangles to delete near bdry: %d \n",e_tria_ct_min);
-
-			int evvv=eu_bdry_connect[eu_bdry_ind[eu]][ej_chose];
-			//collect HE edges to delete:
-			std::vector<std::vector<int>> edges_to_delete;
-			std::vector<std::vector<int>> new_bdry_edges;
-			std::vector<int> tria_to_delete;
-			std::vector<std::pair<int, HE_edge*>> affected_vertices;
-
-
-			HE_edge *checkE=Edges[KKey(eu,evvv)]->pair->next;
-
-			std::vector<int> edge_ii; edge_ii.push_back(eu); edge_ii.push_back(evvv);
-			std::vector<int> edge_iip; edge_iip.push_back(evvv); edge_iip.push_back(eu);
-			edges_to_delete.push_back(edge_ii);
-			edges_to_delete.push_back(edge_iip);
-			edge_ii.clear(); edge_iip.clear();
-
-
-			edge_ii.push_back(checkE->eu); edge_ii.push_back(checkE->ev);
-			edge_iip.push_back(checkE->pair->eu); edge_iip.push_back(checkE->pair->ev);
-			edges_to_delete.push_back(edge_ii);
-			edges_to_delete.push_back(edge_iip);
-			edge_ii.clear(); edge_iip.clear();
-
-			edge_ii.push_back(checkE->next->eu); edge_ii.push_back(checkE->next->ev);
-			new_bdry_edges.push_back(edge_ii);
-			affected_vertices.push_back(std::make_pair(edge_ii[1],Edges[KKey(edge_ii[1],edge_ii[0])]));
-			edge_ii.clear();
-
-			edge_ii.push_back(checkE->next->pair->next->eu); edge_ii.push_back(checkE->next->pair->next->ev);
-			affected_vertices.push_back(std::make_pair(edge_ii[0],Edges[KKey(edge_ii[0],edge_ii[1])]));
-			edge_ii.clear();
-
-			tria_to_delete.push_back(checkE->face->HE_face_id);
-
-
-
-			while(checkE->pair->face!=NULL){
-				checkE=checkE->pair->next;
-
-				//Collect HE edges to delete
-				edge_ii.push_back(checkE->eu); edge_ii.push_back(checkE->ev);
-				edge_iip.push_back(checkE->pair->eu); edge_iip.push_back(checkE->pair->ev);
-				edges_to_delete.push_back(edge_ii);
-				edges_to_delete.push_back(edge_iip);
-				edge_ii.clear(); edge_iip.clear();
-
-				//Collect new Bdry HE's
-				edge_ii.push_back(checkE->next->eu); edge_ii.push_back(checkE->next->ev);
-				new_bdry_edges.push_back(edge_ii);
-				edge_ii.clear();
-
-				edge_ii.push_back(checkE->next->pair->next->eu); edge_ii.push_back(checkE->next->pair->next->ev);
-				affected_vertices.push_back(std::make_pair(edge_ii[0],Edges[KKey(edge_ii[0],edge_ii[1])]));
-				edge_ii.clear();
-
-				//Collect triangles to delete
-				tria_to_delete.push_back(checkE->face->HE_face_id);
-				
-			}
-
-			//Re-calculate the HE structure after deleting the triangles\
-			//Delete the triangle associated with the Pair HE of eu,ev.
-			//And move the last triangle to the slot
-			for(int triaiii=0;triaiii<e_tria_ct_min;triaiii++){
-				int problem_tria_id=tria_to_delete[triaiii];
-				int problem_tria_id3=3*problem_tria_id;
-				int last_tria_id=tria_ct-1;
-				int last_tria_id3=3*last_tria_id;
-				tria_vertex[problem_tria_id3]=tria_vertex[last_tria_id3];
-				tria_vertex[problem_tria_id3+1]=tria_vertex[last_tria_id3+1];
-				tria_vertex[problem_tria_id3+2]=tria_vertex[last_tria_id3+2];
-
-				//Update triangle ct
-				tria_ct--;
-
-				//Update the HE data strcuture: Faces, Edges, Vertices
-				Faces[problem_tria_id].HE_face_id=last_tria_id;
-				Faces[problem_tria_id].edge=Faces[last_tria_id].edge;
-			}
-
-			//Erase deleted triangle edges
-			for(int edgeiii=0;edgeiii<edges_to_delete.size();edgeiii++){
-				int deu=edges_to_delete[edgeiii][0];
-				int dev=edges_to_delete[edgeiii][1];
-				
-				Edges.erase(KKey(deu,dev));
 			}
 			
-			//Make new bdry HE
-			for(int edgeiii=0;edgeiii<new_bdry_edges.size();edgeiii++){
-				int aeu=new_bdry_edges[edgeiii][0];
-				int aev=new_bdry_edges[edgeiii][1];
-				
-				Edges[KKey(aeu,aev)]->face=NULL;
-				Edges[KKey(aeu,aev)]->prev=NULL;
-				Edges[KKey(aeu,aev)]->next=NULL;
-			}
-
-			//Update the Vertices HE structure: Update one of the edge emanating from the vertex
-			int ejj=ej_chose+1; if(ejj>=(signed int)eu_bdry_connect[eu_bdry_ind[eu]].size()){ejj=0;}
-			Vertices[eu].edge=Edges[KKey(eu,eu_bdry_connect[eu_bdry_ind[eu]][ejj])];
-
-			for(std::vector<std::pair<int, HE_edge*>>::iterator viii=affected_vertices.begin();viii!=affected_vertices.end();viii++){
-				Vertices[viii->first].edge=viii->second;
-			}
-
-			have_deleted=true;
-
 		}
-		if(have_deleted==false){
-			printf("Failed to resolve bdry triangles through HE\n");
-			throw std::exception();
-		}
-		
 	}
-	
-printf("C\n");
+printf("\n");
+	//Also add isolated vertices not incident to any triangles to eu_problematic vector. 
+	for(int vi=0;vi<Ncurrent;vi++){
+		if(Vertices[vi].edge==NULL){
+			eu_problematic.push_back(vi);
+			printf("%d ", vi);
+		}
+	}
 
+	if((signed int)eu_problematic.size()>0){
+		//Make values in the vector eu_problematic unique
+		std::sort(eu_problematic.begin(), eu_problematic.end());
+	 	auto last = std::unique(eu_problematic.begin(), eu_problematic.end());
+		eu_problematic.erase(last, eu_problematic.end());
+	}
+
+printf("exit construct_HE_step1()\n");
+}
+
+
+void mesh_alg_2d::construct_HE_step2(){
 
 	//Obtain boundary edges connectivity: bdry HE prev and next
 	//Loop through all edges and obtain the bdry HE's
@@ -2611,11 +2497,6 @@ printf("C\n");
 			Bdry_Edges[eu]=std::make_pair(ev,0); //0 signal not connected yet
 		}
 	}
-
-	//clear memory of intermediate variables
-	eu_bdry_connect.clear();
-	eu_bdry_ind.clear();
-	eu_problematic.clear(); 
 
 printf("D\n");
 
@@ -2648,8 +2529,6 @@ printf("D\n");
 	HE_exist=true;
 printf("E\n");
 }
-
-
 
 
 /**

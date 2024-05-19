@@ -148,12 +148,17 @@ t_c3=t1-t0;
     for(int i=0;i<b_ct;i++){
             //loop through all points of the current boundary; 
             //for boundary i, pt_ct[i]=seg_ct[i]+1
-            for(int j=0;j<seg_ct[i]+1;j++){
+
+            //for(int j=0;j<seg_ct[i]+1;j++){
+            for(int j=0;j<seg_ct[i];j++){
                 //scale and center x component of point
                 double linex=b_pts[i][2*j];
                 //scale and center y component of point
                 double liney=b_pts[i][2*j+1];
-                fprintf(fbout,"%g %g \n", linex,liney);
+                int jj=j+1;
+                double linex1=b_pts[i][2*jj];
+                double liney1=b_pts[i][2*jj+1];
+                fprintf(fbout,"%g %g \n%g %g \n\n", linex,liney, linex1, liney1);
             }
         }
     fclose(fbout);

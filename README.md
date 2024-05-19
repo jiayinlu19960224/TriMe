@@ -319,9 +319,9 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Triangles**
 
-> <code>fp_ti_tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
+> <code>fp_ti_tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. At termination, the triangle vertices IDs are outputted in counter-clockwise (CCW) order. 
 >
-> <code>fp_ti_tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. 
+> <code>fp_ti_tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. At termination, the triangle vertices coordinates are outputted in CCW order. 
 
 **Mesh quality**
 
@@ -331,12 +331,13 @@ The rest of the description phrases in the filenames desribes the data being out
 >
 > <code>fp_tria_quality_stat_overall.txt</code>: This file outputs the overall mesh quality at the corresponding outputted triangulation iterations. Each row consists of $12$ numbers, they are (in order): 
 > - (0) the triangulation iteration number,
-> - (1) the number of triangles,
-> - (2) the maximum $\alpha$, (3) the maximum $\beta$,
-> - (4) the median $\alpha$, (5) the median $\beta$,
-> - (6) the mean $\alpha$, (7) the mean $\beta$,
-> - (8) the $\frac{1}{2}$-mean of $\alpha$, (9) the $\frac{1}{2}$-mean of $\beta$, 
-> - (10) the standard deviation of $\alpha$, (11) the standard deviation of $\beta$. 
+> - (1) the number of vertices, 
+> - (2) the number of triangles,
+> - (3) the maximum $\alpha$, (4) the maximum $\beta$,
+> - (5) the median $\alpha$, (6) the median $\beta$,
+> - (7) the mean $\alpha$, (8) the mean $\beta$,
+> - (9) the $\frac{1}{2}$-mean of $\alpha$, (10) the $\frac{1}{2}$-mean of $\beta$, 
+> - (11) the standard deviation of $\alpha$, (12) the standard deviation of $\beta$. 
 
 The $\frac{1}{2}$-mean mentioned above is calculated as, 
 $$M_{\frac{1}{2}}(x_1,\ldots,x_n)=\left( \frac{1}{n}\sum_{i=1}^n x_i^{\frac{1}{2}} \right)^2,$$
@@ -731,16 +732,17 @@ Performance
 ================================================
 
 
+
+
 Code updates
 ================================================
 Oct 19th, 2023: 
 
 1. Added in fixed point input for meshing with fixed points.
 
-2. Implemented half-edge structure for final mesh clean up and outputting boundary vertices in
-    counter-clockwise (CCW) order.
+2. Implemented half-edge structure for final mesh clean up and outputting boundary vertices in counter-clockwise (CCW) order.
 
-3. Triangle vertex ID's are outputted in counter-clockwise (CCW) order.
+3. Triangle vertex ID's are outputted in counter-clockwise (CCW) order at termination.
 
 
 Acknowledgement
