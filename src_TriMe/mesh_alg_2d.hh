@@ -770,6 +770,15 @@ namespace voro {
          * This function performs any necessary cleanup and print outputs after the meshing is complete.
          */
         void meshing_final();
+        /** 
+         * Boolean variable indicating the last meshing at termination. 
+         */
+        bool doing_final_meshing;
+        /**
+         * Boolean variable indicating whether current iteration is CVD iteration.
+         */
+        bool current_is_CVD; 
+        bool fix_tria_random_pt;
 
 
         //timing variables

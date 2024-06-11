@@ -330,10 +330,16 @@ namespace voro {
         void add_fixed_points_procedure();
 
         /**
-         * @brief Initialize points.
+         * @brief Initialize points by generating random points.
          * @param Ntotal_ Total number of points.
          */
         void pt_init(int Ntotal_);
+
+        /**
+         * @brief Initialize points by reading in a list of points.
+         * @param Ntotal_ Total number of points.
+         */
+        void pt_init(double *pt_list, int Ninit_, int Ntotal_);
 
         /**
          * @brief Print initial points to a file.

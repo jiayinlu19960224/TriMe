@@ -34,7 +34,7 @@ mesh_alg_2d::mesh_alg_2d(parallel_meshing_2d *pm2d_)
 
 	Faces(new HE_face[1]),Vertices(new HE_vert[1]),HE_exist(false),
 
-	tria_order_ccw(false)
+	tria_order_ccw(false), doing_final_meshing(false), current_is_CVD(false), fix_tria_random_pt(false)
 	{
 		tria_ct_private=new int[num_t];
 		tria_vertex_private=new std::vector<int>[num_t];
@@ -618,20 +618,20 @@ void mesh_alg_2d::do_print_outputs(){
  * 		  For the final mesh: Implement Half-edge data strucutre, and print the boundary vertices in CCW order. 
  */
 void mesh_alg_2d::do_print_final_outputs(){
-	if(HE_exist==false){
-		printf("ERROR: Half-edge data strucutre not constructed to print out data of the final mesh.\n");
-    	throw std::exception();
-    }
+	//if(HE_exist==false){
+	//	printf("ERROR: Half-edge data strucutre not constructed to print out data of the final mesh.\n");
+    //	throw std::exception();
+    //}
 
 	char bug0[256];
     sprintf(bug0,"%s/%s_final",pm2d->file_name_prefix,pm2d->file_name_prefix);
 	
-	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
+//	print_xy_id(bug0);   //Print out vertices ID's and coordinates 
 	
-	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
-	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
-	print_tria_vertex_ids(bug0);  //Print out the triangle vertex ID's
-	print_tria_vertex_coords(bug0);  //Print out the triangle vertex coordinates
+//	print_tria_bar_ids(bug0);   //Print out the unique triangulation bar ID's
+//	print_tria_bar_coords(bug0);  //Print out the unique triangulation bar coordinates
+//	print_tria_vertex_ids(bug0);  //Print out the triangle vertex ID's
+//	print_tria_vertex_coords(bug0);  //Print out the triangle vertex coordinates
 	
 	print_tria_quality_stat(bug0);  //Print out the statistics of each triangle's quality measures
 	
@@ -639,7 +639,7 @@ void mesh_alg_2d::do_print_final_outputs(){
     sprintf(bug1,"%s/%s",pm2d->file_name_prefix,pm2d->file_name_prefix);
 	print_tria_quality_stat_overall(bug1); //Print out the overall triangulation quality statistics
 
-	print_bdry_CCW(bug0); //Print out boundary vertices in CCW order; Each line correspond to a separate bdry
+//	print_bdry_CCW(bug0); //Print out boundary vertices in CCW order; Each line correspond to a separate bdry
 
 }
 
@@ -788,15 +788,20 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
     bool tria_is_valid=false;
 
     double ar_alpha_mean_rel_change=fabs(alpha_mean_tria_ar-previous_alpha_mean_tria_ar)/previous_alpha_mean_tria_ar;
+    double ar_check_criteria=1.1*stop_Continue_ar_mean_rel_change;
 
+    double max_tria_ar_rel_change=100;
+    double max_tria_ar_check_criteria=1.1*stop_Continue_max_ar_rel_change;
+    if(max_tria_ar_prev>0){
+        max_tria_ar_rel_change=fabs(max_tria_ar-max_tria_ar_prev)/max_tria_ar_prev;
+    }
     if(valid_tria(tax,tay,tbx,tby,tcx,tcy)==true){
         tria_is_valid=true;
 
         double edge_ratio=0.0;
         double aspect_ratio=0.0;
 
-        
-        if(cvd_pt_update==true && Ncurrent==Ntotal && ar_alpha_mean_rel_change<0.002 && tria_iter_ct%5==0){
+        if(cvd_pt_update==true && Ncurrent==Ntotal && max_tria_ar_rel_change<max_tria_ar_check_criteria && ar_alpha_mean_rel_change<ar_check_criteria && tria_iter_ct%5==0 && doing_final_meshing==false){
         	double a=d_points(tax,tay,tbx,tby);
 			double b=d_points(tbx,tby,tcx,tcy);
 			double c=d_points(tax,tay,tcx,tcy);
@@ -826,7 +831,7 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
         		}
         	}
         	
-        	else if(aspect_ratio>6.0){
+        	else if(aspect_ratio>8.0){
         		double tria_centroid_x, tria_centroid_y;
         		centroid_tria(tax,tay,tbx,tby,tcx,tcy,tria_centroid_x,tria_centroid_y);
         		double ac=d_points(tax,tay,tria_centroid_x,tria_centroid_y);
@@ -840,6 +845,7 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
 			
 
         	if(use_random_point==true){
+        		fix_tria_random_pt=true;
         		//set values for random_point_x, random_point_y
         		int incre=2;
 				int pgridi=(tax-ax)*inv_gdx;
@@ -850,7 +856,10 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
             	std::vector<int> inner_grid_found;
             	int inner_grid_found_ct=0;
             	
+            	int inner_grid_layer_ct=0;
             	while(continue_search){
+            		bool inner_grid_in_layer=false;
+
             		int il=pgridi-incre;int ih=pgridi+incre;
             		int jl=pgridj-incre;int jh=pgridj+incre;
             		if(il<0&&ih>=gnx&&jl<0&&jh>=gny){
@@ -859,6 +868,7 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
             		}
             		for(int gridi=il;gridi<=ih;gridi++){
             			for(int gridj=jl;gridj<=jh;gridj++){
+            				
             				//only search the new layer
             				if(gridi==il||gridi==ih||gridj==jl||gridj==jh){
             					//only search if grid is valid
@@ -868,13 +878,24 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
             							inner_grid_found.push_back(gridi);
             							inner_grid_found.push_back(gridj);
             							inner_grid_found_ct++;
-            							continue_search=false;
+            							//continue_search=false;
+            							inner_grid_in_layer=true;
+
             						}
             					}
             				}
+            				
+
             			}
             		}
             		incre++;
+            		if(inner_grid_in_layer==true){
+    					inner_grid_layer_ct++;
+    					if(inner_grid_layer_ct==3){
+    						continue_search=false; 
+    					}
+    				}
+
             	}
 
             	//Select a random inner grid in the outer layer found
@@ -932,7 +953,7 @@ bool mesh_alg_2d::extract_tria_info(int vid1,int vid2, int vid3,
                 }
             }
         
-            if(cvd_pt_update==false || Ncurrent!=Ntotal || ar_alpha_mean_rel_change>=0.002 || tria_iter_ct%5!=0){
+            if(edge_ratio==0.0 && aspect_ratio==0.0){
             	edge_ratio=edge_ratio_tria(tax,tay,tbx,tby,tcx,tcy);
             	aspect_ratio=aspect_ratio_tria(tax,tay,tbx,tby,tcx,tcy);
             }
@@ -1039,6 +1060,7 @@ void mesh_alg_2d::voro_compute_and_store_info(bool store_tria_bar,bool store_tri
     bool store_ccrd_h_ratio, bool store_max_tria_ar,
     bool cvd_pt_update,
     bool store_xy_id, double *&xy_id_store_array){
+	fix_tria_random_pt=false;
 
 	if(store_max_tria_ar){
 		max_tria_ar_prev=max_tria_ar;
@@ -1409,8 +1431,11 @@ void mesh_alg_2d::determine_Continue_tria_quality(){
 
     if(max_tria_ar_prev>0){
         double max_tria_ar_rel_change=fabs(max_tria_ar-max_tria_ar_prev)/max_tria_ar_prev;
-        if(max_tria_ar_rel_change>stop_Continue_max_ar_rel_change && max_tria_ar>3.0){
+        if(max_tria_ar_rel_change>stop_Continue_max_ar_rel_change){ //&& max_tria_ar>6.0){
             Continue=true;
+        }
+        if(fix_tria_random_pt==true){
+        	Continue=true;
         }
     }
 
@@ -1441,7 +1466,7 @@ printf("start add pt \n");
     bool store_tria_centroid=true;
     bool store_ccrd_h_ratio=true;
     bool store_max_tria_ar=false;
-    bool cvd_pt_update=false;
+    bool cvd_pt_update=false; current_is_CVD=false;
     bool store_xy_id=false;
     double *dummy_array=new double[1];
 	voro_compute_and_store_info(store_barid,store_triangle_quality,
@@ -2249,6 +2274,49 @@ t_algorithm_all_non_voro+=(t4-t0-t_voro_computation);
  */
 void mesh_alg_2d::meshing_final(){
 	printf("Final meshing!\n");
+	doing_final_meshing=true;
+double t0=omp_get_wtime();
+	tria_iter_ct++;
+	determine_printOutputs();
+
+	//last round of retriangulation, and store triangle info for print out later
+	bool store_barid=false;
+	bool store_triangle_quality=false;
+	bool store_tria_vertex=false;
+    bool store_tria_centroid=false;
+    bool store_ccrd_h_ratio=false;
+    bool store_max_tria_ar=false;
+    bool cvd_pt_update=false; current_is_CVD=false;
+    bool store_xy_id=false;
+    double *dummy_array=new double[1];
+    if(printOutputs==true){
+		store_barid=true;
+		store_triangle_quality=true;
+		store_tria_vertex=true;
+	}
+double t1=omp_get_wtime();
+	voro_compute_and_store_info(store_barid,store_triangle_quality,
+		store_tria_vertex,
+		store_tria_centroid,
+		store_ccrd_h_ratio, store_max_tria_ar,
+		cvd_pt_update,
+		store_xy_id,dummy_array);
+double t2=omp_get_wtime();
+t_voro_computation+=t2-t1;
+
+	delete [] dummy_array;
+
+	//output
+	if(printOutputs==true){
+		do_print_outputs();
+	}
+double t3=omp_get_wtime();
+t_algorithm_all_non_voro+=(t3-t0-(t2-t1));
+}
+
+/* Half-edge final meshing
+void mesh_alg_2d::meshing_final(){
+	printf("Final meshing!\n");
 
 	double t0=omp_get_wtime();
 	double ftvoro=0.0;
@@ -2302,6 +2370,7 @@ void mesh_alg_2d::meshing_final(){
 	    		if(siii<Ntotal){
 	    			pm2d->xy_id[2*iii]=pm2d->xy_id[2*siii];
 		    		pm2d->xy_id[2*iii+1]=pm2d->xy_id[2*siii+1];
+		    		pm2d->pt_ctgr[iii]=pm2d->pt_ctgr[siii];
 		    		iii++;
 	    		}
 	    		else{
@@ -2330,6 +2399,7 @@ void mesh_alg_2d::meshing_final(){
 
 	printf("Final mesh: %d vertices; %d triangles \n", Ntotal, tria_ct);
 }
+*/
 
 
 /**
@@ -2341,9 +2411,9 @@ void mesh_alg_2d::construct_HE_step1(){
 
 printf("constructing HE\n");
 	//clear barid storage to avoid redundancy in storage space
-	//delete [] barid;
-	//barid=new int[2*1];
-	//barid_barct=1;
+	delete [] barid;
+	barid=new int[2*1];
+	barid_barct=1;
 	
 	//Initialize variables
 	Edges.clear();
@@ -2432,8 +2502,9 @@ printf("B\n");
 	eu_bdry_ind.clear();
 	eu_problematic.clear(); 
 
-printf("Problematic vertices: ");
+printf("Resolving problematic vertices\n");
 	int bdry_ind=0;
+
 	for(std::unordered_map<size_t, HE_edge*>::iterator itr_e=Edges.begin();itr_e!=Edges.end();itr_e++){
 		if(itr_e->second->face==NULL){
 			int eu=itr_e->second->eu;
@@ -2450,7 +2521,6 @@ printf("Problematic vertices: ");
 					eu_problematic.push_back(eu);
 				}
 				eu_bdry_connect[eu_bdry_ind[eu]].push_back(ev);
-				printf("%d ", eu);
 				problem_stored=true;
 			}
 
@@ -2466,12 +2536,11 @@ printf("Problematic vertices: ");
 			
 		}
 	}
-printf("\n");
+
 	//Also add isolated vertices not incident to any triangles to eu_problematic vector. 
 	for(int vi=0;vi<Ncurrent;vi++){
 		if(Vertices[vi].edge==NULL){
 			eu_problematic.push_back(vi);
-			printf("%d ", vi);
 		}
 	}
 
@@ -2483,6 +2552,7 @@ printf("\n");
 	}
 
 printf("exit construct_HE_step1()\n");
+printf("0: %d %d\n", Vertices[0].edge->eu, Vertices[0].edge->ev);
 }
 
 
@@ -2494,6 +2564,9 @@ void mesh_alg_2d::construct_HE_step2(){
 		if(Edges[itr_e->first]->face==NULL){
 			int eu=itr_e->second->eu;
 			int ev=itr_e->second->ev;
+			if (eu==0 || ev==0){
+				printf("%ld (%d %d)\n",itr_e->first,itr_e->second->eu,itr_e->second->ev);
+			}
 			Bdry_Edges[eu]=std::make_pair(ev,0); //0 signal not connected yet
 		}
 	}
@@ -2510,17 +2583,24 @@ printf("D\n");
 			bool Continue_bdry=true;
 			int eu0=eu; int ev0=ev;
 			while(Continue_bdry){
+		printf("aaa\n");
 				int nextu=ev;
 				int nextv=Bdry_Edges[ev].first;
+		printf("bbb %d %d %d %d\n", nextu, nextv, eu, ev);
 				Edges[KKey(eu,ev)]->next=Edges[KKey(nextu,nextv)];
+		printf("ccc %ld %ld \n",KKey(nextu,nextv), KKey(eu,ev));
 				Edges[KKey(nextu,nextv)]->prev=Edges[KKey(eu,ev)];
+		printf("ddd\n");
 				Bdry_Edges[eu].second=1;
+		printf("eee\n");
 				Bdry_Edges[nextu].second=1;
+		printf("fff\n");
 				eu=nextu;
 				ev=nextv;
 				if(eu==eu0){
 					Continue_bdry=false;
 				}
+		printf("ggg\n");
 			}
 		}
 	}

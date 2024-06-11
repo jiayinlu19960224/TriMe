@@ -17,7 +17,7 @@ namespace voro {
     /**
      * @brief Initialize Ncurrent=pt_init_frac*Ntotal points in the container.
      */
-    const double pt_init_frac=0.2; 
+    const double pt_init_frac=0.2;
 
     /**
      * @brief Add points into the container: Nadd=add_pt_fac*Ncurrent
@@ -177,7 +177,6 @@ namespace voro {
     /**
      * @brief Hybrid related variables
      */
-    const double hybrid_switch_ar_alpha_mean_relative_change_threshold_1=0.0025;
     const double hybrid_switch_ar_alpha_mean_relative_change_threshold_2=0.0015;
 }
 

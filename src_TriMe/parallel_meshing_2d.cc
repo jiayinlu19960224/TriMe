@@ -754,7 +754,7 @@ void parallel_meshing_2d::pt_init(int Ntotal_){
 	//since they should only be constructed once and can be used throughout.
 	double scale_adf_error_tol=1.0/sqrt(1.0*Ntotal/Ncurrent);
 
-	printf("start pt init routine, geneating %d pts\n",Ncurrent);
+	printf("start pt init routine, generating %d pts\n",Ncurrent);
 
 	delete [] xy_id;
 	xy_id=new double[Ntotal*2];
@@ -1060,6 +1060,171 @@ t_generate_pt_in_grid=omp_get_wtime()-t0;
     }
     fclose(fadfout);
 */
+
+}
+
+
+/**
+ * @brief Initialize the points in the container. 
+ * Done by reading into a point list [x0,y0,x1,y1,...] of Ninit_ initial points. 
+ * 
+ * It initializes various variables and arrays used in the point initialization process.
+ * It calculates the normalized density arrays and characteristic length arrays for inner and boundary grids.
+ * It constructs adaptive arrays for boundary grids based on the error tolerance.
+ * It performs error diffusion and calculates the number of points to generate for each grid.
+ * It generates random points within each inner and ingeo_bdry grid according to the density field and performs error diffusion.
+ * It stores the initially generated points in temporary arrays and handles cases where too many or too few points were generated.
+ * It generates the remaining points needed to reach the desired total number of points.
+ * It assigns the generated points to the xy_id and pt_ctgr arrays and adds them to the container.
+ * It cleans up temporary arrays and releases memory.
+ *
+ * @param pt_list Initial pt list.
+ * @param Ninit_ Number of initial points.
+ * @param Ntotal_ Number of total meshing points.
+ */
+void parallel_meshing_2d::pt_init(double *pt_list, int Ninit_, int Ntotal_){
+
+	//-------------A. Init general set up--------------//
+
+	Ntotal=Ntotal_;
+	Ncurrent=Ninit_;
+	inner_pt_ct=0;
+	Nremain=Ntotal-Ncurrent;
+
+	if(Ncurrent+Nfixed>Ntotal){
+		printf("ERROR: total mesh points < Ncurrent+Nfixed! \n");
+        throw std::exception();
+	}
+	
+	int pt_counter=0; //after the end of the loop, this is the number of points generated for inner grids.
+	//bdry ADF cells should have error tolerance based on geps of Ntotal, 
+	//rather than geps of Ncurrent, 
+	//since they should only be constructed once and can be used throughout.
+	double scale_adf_error_tol=1.0/sqrt(1.0*Ntotal/Ncurrent);
+
+	printf("start pt init routine, reading in %d pts from list\n",Ncurrent);
+
+	delete [] xy_id;
+	xy_id=new double[Ntotal*2];
+	delete [] pt_ctgr;
+	pt_ctgr=new int[Ntotal];
+	delete [] chrtrt_len_h;
+	chrtrt_len_h=new double[gnxy];
+
+	//initialize array values to undefined dummy values
+	#pragma omp parallel for num_threads(num_t)
+	for(int i=0;i<Ntotal;i++){
+		xy_id[2*i]=ax+bx; //x=ax+bx: undefined
+		xy_id[2*i+1]=ay+by; //y=ay+by: undefined
+		pt_ctgr[i]=0; //0: undefined
+	}
+	#pragma omp parallel for num_threads(num_t)
+	for(int i=0;i<gnxy;i++){
+		chrtrt_len_h[i]=-1; //-1: undefined
+	}
+
+	//For bdry grids: 
+	//Compute adaptive geometry related arrays: geps, deps, adf cells
+	delete [] bgrid_geps;
+	bgrid_geps=new double[geo_bgrid_ct];
+	delete [] bgrid_deps;
+	bgrid_deps=new double[geo_bgrid_ct];
+	bdry_adf_construction=true;
+	bgrid_adf=new adf_2d*[geo_bgrid_ct];
+	bgrid_adf_stat=new adf_stat_2d*[geo_bgrid_ct];
+
+	std::vector<int> bgrid_ingeo_ind; //index of bdry grids whose center sdf(cx,cy)<=0.5*min(gdx,gdy)
+	std::vector<int> bgrid_outgeo_ind; //index of bdry grids whose center sdf(cx,cy)>0.5*min(gdx,gdy)
+	int *bgrid_ingeo_outgeo_ctgr=new int[geo_bgrid_ct];
+	int bgrid_ingeo_ct=0;
+	int bgrid_outgeo_ct=0;
+	for(int gi=0;gi<geo_bgrid_ct;gi++){
+		int ij=geo_bgrid_ij(gi);
+		int i=ij%gnx;
+        int j=ij/gnx;
+        double x=ax+(0.5+i)*gdx; 
+        double y=ay+(0.5+j)*gdy;
+        if(sdf(x,y)<=0.5*min(gdx,gdy)){
+        	bgrid_ingeo_ind.push_back(gi);
+        	bgrid_ingeo_ct++;
+        	bgrid_ingeo_outgeo_ctgr[gi]=bgrid_ingeo_ct; //ingeo: >0; 
+        }
+        else{
+        	bgrid_outgeo_ind.push_back(gi);
+        	bgrid_outgeo_ct++;
+        	bgrid_ingeo_outgeo_ctgr[gi]=-bgrid_outgeo_ct; //outgeo: <0; 
+        }
+	}
+
+	//-------------B. Calculate the normalized density arrays, and the chrtrt_len_h for all inner and bdry grids--------------//
+	//set S1:density array for every inner grid and in_geo bdry grid
+	double *density_igrid=new double[geo_igrid_ct];
+	//set S2:density array for bdry grids whose sdf(cx,cy)<0
+	double *density_bgrid_ingeo=new double[bgrid_ingeo_ct];
+	//expected number of points in a inner grid
+	double *Ncurrent_rho_igrid=new double[geo_igrid_ct];
+	//expected number of points in a bdry grid in set S2
+	double *Ncurrent_rho_bgrid_ingeo=new double[bgrid_ingeo_ct];
+
+	get_normalized_density_chrtrt_h(bgrid_ingeo_ct,bgrid_outgeo_ct,
+	bgrid_ingeo_ind,bgrid_outgeo_ind,density_igrid,density_bgrid_ingeo,
+	Ncurrent_rho_igrid,Ncurrent_rho_bgrid_ingeo);
+
+	//-------------C. get adaptive arrays for bdry grids--------------//
+	get_bdry_grid_adaptive_arrays(scale_adf_error_tol);
+
+	//-------------D. generate random points in inner and ingeo_bdry grids, according to density field, and do error diffusion--------------//
+	#pragma omp parallel for num_threads(num_t)
+	for(int pi=0;pi<Ncurrent;pi++){
+		int pii=Nfixed+pi;
+		double xtemp=pt_list[2*pi];
+		double ytemp=pt_list[2*pi+1];
+		xy_id[2*pii]=xtemp;
+		xy_id[2*pii+1]=ytemp;
+
+
+		int g_ind0=geo_grid(xtemp,ytemp);
+    	if(g_ind0<0){ //inner grid
+    		pt_ctgr[pii]=-1; //-1: inner pt
+    		#pragma omp atomic
+    		inner_pt_ct+=1;
+    	}
+    	else if(g_ind0>0 && g_ind0<=gnxy){ 
+    		double pt_adf=geo_bgrid_adf(xtemp,ytemp);
+    		double pt_bgrid_geps=get_bgrid_geps(xtemp,ytemp);
+    		if(abs(pt_adf)<=pt_bgrid_geps){ //bdry pt
+    			pt_ctgr[pii]=1;
+    		}
+    		else if(pt_adf<-pt_bgrid_geps){
+				pt_ctgr[pii]=-1; //-1: inner pt
+				#pragma omp atomic
+    			inner_pt_ct+=1;
+			}
+			else{
+				printf("ERROR: initial pt read in outside of shape! \n");
+                throw std::exception();
+			}
+		}
+		else{
+			printf("ERROR: initial pt read in outside of shape! \n");
+            throw std::exception();
+		}
+	}
+
+
+	//Add Nfixed fixed points into the intial points, updating xy_id and pt_ctgr. 
+	//The first Nfixed spaces in xy_id and pt_ctgr are the fixed points.
+	//This also updates Ncurrent and Nremain,
+	//And updates chrtrt_len_h[ij], bgrid_geps[gi], bgrid_deps[gi].
+	add_fixed_points_procedure();
+
+	con->add_parallel(xy_id, Ncurrent, num_t);
+    con->put_reconcile_overflow();
+
+	delete [] density_igrid;
+	delete [] density_bgrid_ingeo;
+	delete [] Ncurrent_rho_igrid;
+	delete [] Ncurrent_rho_bgrid_ingeo;
 
 }
 

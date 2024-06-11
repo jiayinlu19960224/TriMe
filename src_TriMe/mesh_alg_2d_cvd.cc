@@ -419,6 +419,7 @@ void mesh_alg_2d_cvd::voro_compute_retria_extract_info(){
         store_tria_vertex=true;
         store_barid=true;
     }
+    current_is_CVD=true; 
 
     voro_compute_and_store_info(store_barid,store_triangle_quality,
         store_tria_vertex,
