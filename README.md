@@ -779,7 +779,7 @@ Our tests are done on a Ubuntu Linux computer with 256 GB of memory and dual Int
 Here is a schematic plot of an example mesh with ``Ntotal``$=10^3$ points.
 
 <p align="center">
-<img src="/docs/square_mesh_1000.png" width="400" />
+<img src="/docs/square_mesh_1000.png" width="300" />
 </p>
 
 ### Recommended settings
