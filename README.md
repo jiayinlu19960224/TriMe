@@ -822,18 +822,28 @@ This is the case illustrated in the [custom poker example](#example-1-custom-pok
 Adaptive meshing on the custom shape represents a case where the ***geometry and the sizing field are complicated***. In general, we found that when either geometry or sizing field is complicated, it is recommended to use: 
 
 >***Point addition scheme***, where we initialize ``pt_init_frac`` of ``Ntotal`` points to start meshing. And we add points during meshing from time to time to refine regions of the mesh that need points the most.   
->>This can be done by modifying the parameter ``const double pt_init_frac=0.2`` in file ``/src_TriMe/config.hh``.
+>> This can be done by modifying the parameter ``const double pt_init_frac=0.2`` in file ``/src_TriMe/config.hh``.
+>>
+>> Reason: According to the highly non-uniform density field, points in the mesh require more movements and adjustments. However, since the geometry is complicated, points cannot move around freely without obstruction. Using the point addition scheme effectively refines regions of the mesh that need points most during the meshing iterations, and leads to much better shaped triangles conforming to the density field. 
 
 >Furthermore, we recommend to use ***hybrid meshing*** in these situations. 
+
 
 ### Performance
 Here, we show performance statistics (parallel time, mesh quality) with ``Ntotal``$=10^6$ points, of the three meshing methods, using the recommended point addition scheme:
 
 ![adaptive-poker-performance](/docs/Github-performance-adaptive-poker.png)
 
-Plot (a) shows
+Plot (a) shows parallelization significantly speed up the computation time. Furthermore, we see that CVD meshing is the most expensive in serial code, while DistMesh and hybrid meshing takes similar time. This is reasonable, since the Voronoi cell centroid calculation is more expensive than the force balancing procedure in DistMesh. And because hybrid meshing uses mostly the cheaper DistMesh iterations, its computation time is similar to that of DistMesh, and hybrid also tends to terminate stably like CVD. Using $28$-thread parallel code, the computation time of the three methods are similar.
+
+Plot (b) shows the corresponding parallel efficiency. As expected, CVD meshing has high parallel efficiency, DistMesh the lowest, and hybrid in between. In this case, hybrid meshing has only a few CVD iterations at the end, so its efficiency is similar to that of DistMesh. 
+
+Plot (c) shows the median aspect ratio. The peaks in the plots correspond to when points are added into the mesh according to the point addition scheme. All three meshing methods achieve very good median ratios at termination.
+
+Plot (d) shows the maximum aspect ratios of the worst triangles. DistMesh typically has highest maximum aspect ratios, corresponding to flatter shaped triangles in the mesh. In comparison, CVD meshing has better shaped triangles and lower maximum aspect ratio. Since hybrid meshing uses CVD iterations as the end as refinement steps, it also has lower maximum aspect ratio similar to that of CVD meshing.
 
 ### Parallel performance for varying system size
+As shown in the plot, similar to the uniform meshing of sqaure case, we observe similar trend of a gradual increase in parallel efficiency as the system size increases from $10^4$ to $10^6$ particles. Then the efficiency remains at roughly the same level as the system size continues to increase. Furthermore, CVD meshing has the highest efficiency, DistMesh the lowest, and hybrid meshing in between. 
 
 <p align="center">
 <img src="/docs/Github-performance-adaptive-poker-Npt.png" width="600" />
