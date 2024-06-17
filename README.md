@@ -791,6 +791,7 @@ Uniform meshing of a square represents a situation where both the geometry and t
 
 ### Performance
 Here, we show performance statistics (parallel time, mesh quality) with ``Ntotal``$=10^6$ points, of the three meshing methods, using the recommended setting of initializing all points prior to meshing:
+
 ![uniform-square-performance](/docs/Github-performance-uniform-square.png)
 
  Plot (a) shows that parallel computation significantly speed up the meshing time. Indeed, the serial codes run close to $300$ s for both CVD and hybrid meshing. But the $28$-thread parallel code run only $10\sim 15$ s. Here, we see DistMesh takes much longer. This can sometimes happen when a specific set of meshing points results in problematic triangles during the meshing process, causing more iterations to terminate. This situation rarely happens using CVD meshing. Since the shape and the sizing field are both simple, CVD meshing can effectively and steadily improve mesh quality and stably lead to terminate. Furthermore, as hybrid meshing switches to CVD meshing once the overall mesh achieves a good quality, it also stably leads to termination. 
@@ -827,6 +828,7 @@ Adaptive meshing on the custom shape represents a case where the ***geometry and
 
 ### Performance
 Here, we show performance statistics (parallel time, mesh quality) with ``Ntotal``$=10^6$ points, of the three meshing methods, using the recommended point addition scheme:
+
 ![adaptive-poker-performance](/docs/Github-performance-adaptive-poker.png)
 
 Plot (a) shows
