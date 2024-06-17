@@ -604,7 +604,7 @@ We can also define our shape using the contour line segments of the shape. The l
 
 > If the shape has holes, the hole boundary is inputted as a sequence of points in  ***counter-clockwise*** order, again forming a close loop. In this case, the ***interior*** of the loop is the ***exterior*** of the shape.
 
-***Example 1: Custom poker***
+#### ***Example 1: Custom poker***
 
 An example is provided in ``custom_poker_meshing.cc``. Here is the mesh it produces:
 
@@ -694,7 +694,7 @@ if(method_ind==0){
     }
 ```
 
-***Example 2: North America geography map***
+#### ***Example 2: North America geography map***
 
 Another example is meshing on the North America geography map:
 
@@ -747,6 +747,95 @@ After adding fixed points, we can initialize meshing points as follows. Notice t
 Performance
 ================================================
 
+For detailed performance analysis, please refer to Sec. 6 and 7 of the [paper](https://arxiv.org/abs/2309.13824). 
+Here, we provide some brief summaires on two cases:
+
+- [A. Square, uniform sizing field](#a-square-uniform-sizing-field)
+
+- [B. Square, uniform sizing field](#b-custom-poker-adaptive-sizing-field)
+
+A few aspects we test are: 
+
+- **Parallel performance**. We measure the wall clock time $t_p$ using a variable number of $p$ threads, and calculate the parallel efficiency using
+    $$T_e(p) =\frac{t_1}{p \cdot t_p}$$
+    which measures the effective slowdown from the hypothetically perfect parallel
+    scaling.
+
+- **Optimal point scheme**. The above tests are repeated using two different point schemes: 
+      
+      I. All ``Ntotal`` points are initialized prior to meshing.
+
+      II. A small fraction of points are first initialized, and during the meshing iterations, additional points are inserted to refine the mesh, until ``Ntotal`` points are reached.
+    We compare the timing performance and mesh quality of the point schemes.
+
+- **Mesh quality**. We provide mesh quality statistics from a typical run using the preferred point scheme.
+   
+- **System size**. Using the preferred point scheme, we vary the number of meshing points ``Ntotal``, and examine the parallel performance of the code as system size varies. 
+
+Our tests are done on a Ubuntu Linux computer with 256 GB of memory and dual Intel Xeon E5-2650L v4 processors with 14 low-power cores using a 1.7 GHz base clock speed. Since the computer has $28$ physical cores, we focus our attention to the first $28$ threads. 
+
+
+## A. Square, uniform sizing field. 
+Here is a schematic plot of an example mesh with ``Ntotal``$=10^3$ points.
+
+<p align="center">
+<img src="/docs/square_mesh_1000.png" width="400" />
+</p>
+
+### Recommended settings
+Uniform meshing of a square represents a situation where both the geometry and the sizing field of the mesh are simple. In general, we found that for ***simple and convex shapes*** (e.g. rectangles, circles) where points can easily move around without obstruction, and when the ***element sizing field varies gradually***, there is no need to use the point addition scheme. 
+>Instead, ***initializing all points to start meshing*** gives better performance. 
+>>This can be done by modifying the parameter ``const double pt_init_frac=1.0`` in file ``/src_TriMe/config.hh``.
+
+>Furthermore, we recommend to use ***CVD meshing or hybrid meshing*** in these situations. 
+
+### Performance
+Here, we show performance statistics (parallel time, mesh quality) with ``Ntotal``$=10^6$ points, of the three meshing methods, using the recommended setting of initializing all points prior to meshing:
+![uniform-square-performance](/docs/Github-performance-uniform-square.png)
+
+ Plot (a) shows that parallel computation significantly speed up the meshing time. Indeed, the serial codes run close to $300$ s for both CVD and hybrid meshing. But the $28$-thread parallel code run only $10\sim 15$ s. Here, we see DistMesh takes much longer. This can sometimes happen when a specific set of meshing points results in problematic triangles during the meshing process, causing more iterations to terminate. This situation rarely happens using CVD meshing. Since the shape and the sizing field are both simple, CVD meshing can effectively and steadily improve mesh quality and stably lead to terminate. Furthermore, as hybrid meshing switches to CVD meshing once the overall mesh achieves a good quality, it also stably leads to termination. 
+ 
+ Plot (b) shows the corresponding parallel efficiency. As expected, CVD meshing has very high parallel efficiency close to $0.9$, since in the CVD procedure, the Voronoi cell centroids can be computed simultaneously among parallel threads. And we see that DistMesh has the lowest efficiency, as the algorithm is less efficient for parallelization. Hybrid meshing has parallel efficiency in between the other two. 
+
+ Plot (c) shows the median aspect ratios of the meshes against the number of meshing iterations from a typical run. We see all methods produce overall very high quality meshes at termination.
+ 
+Plot (d) shows the maximum aspect ratio, corresponding to the worst triangles in the meshes. We see the ratios are very reasonable for all three methods, meaning all triangles are of high quality and close to equilateral triangles. 
+
+
+### Parallel performance for varying system size
+
+<p align="center">
+<img src="/docs/Github-performance-uniform-square-Npt.png" width="600" />
+</p>
+
+The plot here shows the parallel efficiency as the number of points increases. As expected, CVD meshing has the best efficiency, and the efficiency of DistMesh is the lowest. Furthermore, we see a gradually increasing trend of parallel efficiency for the three meshing methods from $10^4$ to $10^6$ particles. After this, parallel efficiencies remain roughly at the same level as the system size continues to increase. The higher parallel efficiency for large systems is desirable for large-scale meshing. 
+
+## B. Custom poker, adaptive sizing field. 
+This is the case illustrated in the [custom poker example](#example-1-custom-poker). For performance test, we mesh it with ``Ntotal``$=10^6$ points. The corresponding point density field is shown here: 
+
+<p align="center">
+<img src="/docs/large_system_density_field.png" width="400" />
+</p>
+
+### Recommended settings
+Adaptive meshing on the custom shape represents a case where the ***geometry and the sizing field are complicated***. In general, we found that when either geometry or sizing field is complicated, it is recommended to use: 
+
+>***Point addition scheme***, where we initialize ``pt_init_frac`` of ``Ntotal`` points to start meshing. And we add points during meshing from time to time to refine regions of the mesh that need points the most.   
+>>This can be done by modifying the parameter ``const double pt_init_frac=0.2`` in file ``/src_TriMe/config.hh``.
+
+>Furthermore, we recommend to use ***hybrid meshing*** in these situations. 
+
+### Performance
+Here, we show performance statistics (parallel time, mesh quality) with ``Ntotal``$=10^6$ points, of the three meshing methods, using the recommended point addition scheme:
+![adaptive-poker-performance](/docs/Github-performance-adaptive-poker.png)
+
+Plot (a) shows
+
+### Parallel performance for varying system size
+
+<p align="center">
+<img src="/docs/Github-performance-adaptive-poker-Npt.png" width="600" />
+</p>
 
 
 
