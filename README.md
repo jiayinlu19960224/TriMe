@@ -389,12 +389,13 @@ In the basic example above, the (triangle) element sizing field was calculated a
 A sizing field function gives the ***relative*** sizes of the triangles. For example, a sizing field of $1+x$ on a square domain $[0,1]\times[0,1]$ means the triangles close to the right edge $x=1$ are about two times larger than the triangles close to the left edge $x=0$. 
 
  An example implementation is provided in the file ``primitive_shape_meshing_sizing_function.cc``. Notice that we first need to create our own sizing field class ``sizing_2d_func``, which is derived from the base class ``sizing_2d``. In ``sizing_2d_func``, we can define our own sizing field function in ``double getSizingVal(double x, double y)``. 
-
+ 
  ```c++
  /**
  * @brief A class representing a user-defined sizing function in 2D.
  *
- * This class derives from the base class `sizing_2d` and provides user-defined implementations for
+ * This class derives from the base class `sizing_2d` and provides 
+ * user-defined implementations for
  * computing sizing and density values at a given point.
  */
 class sizing_2d_func : public sizing_2d {
