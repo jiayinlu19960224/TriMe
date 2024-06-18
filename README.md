@@ -86,6 +86,8 @@ Directory structure
 >
 ><code>Examples</code>: Sub-directory with example files of meshing on geometry shapes making use of the library
 >
+><code>Visualization</code>: Sub-directory with a simple python script to visualize the mesh based on the output files
+>
 > **Documentation**
 >
 ><code>README.md</code>: Documentation and quick start guide
