@@ -39,7 +39,9 @@ Table of contents
 
       3.4. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
 
-      3.5. [Customization](#customization): 
+      3.5. [Visualize mesh](#visualize-mesh)
+
+      3.6. [Customization](#customization): 
             
       - [Changing number of parallel threads](#changing-number-of-parallel-threads)
       - [User-defined sizing field](#user-defined-sizing-field)
@@ -375,6 +377,18 @@ The rest of the description phrases in the filenames desribes the data being out
 The $\frac{1}{2}$-mean mentioned above is calculated as, 
 $$M_{\frac{1}{2}}(x_1,\ldots,x_n)=\left( \frac{1}{n}\sum_{i=1}^n x_i^{\frac{1}{2}} \right)^2,$$
 which is less sensitive to large outliers than the arithmetic mean, and thus more suitable as an indicator for overall mesh quality.
+
+Visualize mesh
+---------------
+A simple Python program to visulize your mesh is provided in ``Visualization/visualize_mesh.py``. Simply modify the path to output files as directed in the script, and run the script to view the mesh. 
+
+If you have ``Gnuplot`` program installed, then you can go into your output files folder, and run the following gnuplot commands to view the mesh: 
+
+```
+eps=0.01
+
+plot [-eps:1+eps] [-eps:1+eps] '..._tria_bar_coords.txt' w l, '..._xy_id.txt' u 1:2 w p pt 7 ps 0.1
+```
 
 
 Customization
