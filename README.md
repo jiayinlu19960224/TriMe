@@ -33,11 +33,13 @@ Table of contents
 
       3.1. [Compilation](#compilation): Linux / Mac OS / Windows with Cygwin
       
-      3.2. [Run a basic example](#run-a-basic-example): built-in shape primitives, mesh adaptivity control, parallel threads control
+      3.2. [Run your own program](#run-your-own-program)
 
-      3.3. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
+      3.3. [Run a basic example](#run-a-basic-example): built-in shape primitives, mesh adaptivity control, parallel threads control
 
-      3.4. [Customization](#customization): 
+      3.4. [Understand the output files](#understand-the-output-files): vertices, triangles, edges, boundaries,  mesh quality measures
+
+      3.5. [Customization](#customization): 
             
       - [Changing number of parallel threads](#changing-number-of-parallel-threads)
       - [User-defined sizing field](#user-defined-sizing-field)
@@ -136,12 +138,38 @@ The code is written in ANSI <span style="font-variant:small-caps;">C++</span>, a
 package contains the <span style="font-variant:small-caps;">C++</span> source code and example files. On Linux, Mac OS, and 
 Windows (using Cygwin), the compilation and installed can be carried out using GNU Make.
 
-To begin, the user should review the file "config.mk" in the top level
+To begin, the user should review the file ``config.mk`` in the top level
 directory, to make sure that the compilation and installation settings are
 appropriate for their system. 
 
-Then type <code>make</code> in the command line in the Example directory will compile the static
+> The current compiler flgas are for Mac. For a Linux system, you should change the compiler flags in ``config.mk`` to: 
+>>cc=gcc
+>>
+>>cxx=g++
+
+Then type <code>make</code> in the command line in the ``Example`` directory will compile the static
 library and examples. And we now see executable example files in the directory. 
+
+Run your own program
+---------------
+Suppose you write your own program using TriMe++ in ``/Example`` directory, called ``my_program.cc``. To compile the program, you simply need to make a few changes to ``/Example/Makefile``:
+
+> Add ``my_program`` to the line ``execs``, separated by a space with other programs: 
+>
+>```
+>execs = my_program other_program1 other_program2 ...
+>```
+ 
+> Add the following similar to other example programs: 
+>
+>```
+>my_program: my_program.cc $(objs)
+>        $(cxx) $(cflags) $(iflags) $(lflags) -o $@ $^ -lvoro++ -ltrime++
+>```
+
+Then, in the ``/Example`` directory command line type ``make``, you shall see your executable ``my_program``, and you can run it by typing ``./my_program``. 
+
+
 
 Run a basic example
 ---------------
@@ -324,7 +352,7 @@ The rest of the description phrases in the filenames desribes the data being out
 
 **Triangles**
 
-> <code>fp_ti_tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. At termination, the triangle vertices IDs are outputted in counter-clockwise (CCW) order. 
+> <code>fp_ti_tria_vertex_ids.txt</code>: Each row format is <code>[tid vid0 vid1 vid2]</code>, the triangle ID followed by the three particle IDs of its three vertices. 
 >
 > <code>fp_ti_tria_vertex_coords.txt</code>: Each row format is <code>[tid x0 y0 x1 y1 x2 y2]</code>, the triangle ID followed by the three particle coordinates of its three vertices. At termination, the triangle vertices coordinates are outputted in CCW order. 
 
@@ -348,15 +376,6 @@ The $\frac{1}{2}$-mean mentioned above is calculated as,
 $$M_{\frac{1}{2}}(x_1,\ldots,x_n)=\left( \frac{1}{n}\sum_{i=1}^n x_i^{\frac{1}{2}} \right)^2,$$
 which is less sensitive to large outliers than the arithmetic mean, and thus more suitable as an indicator for overall mesh quality.
 
-**Shape boundaries**
-
-We can output the vertices and edges made up of the shape boundaries in counter-clockwise order at termination. Note that this is only outputted at termination.
-
-Suppose at termination, the shape have $B$ boundaries, $b_1, b_2, ...b_B$. We use an integer <code>bi</code> to denote the $b_i^{\text{th}}$ boundary. 
-
-><code>fp_final_bdry_vertices_ids_CCW_bi.txt</code>: The boundary point IDs in counter-clockwise order of the $b_i^{\text{th}}$ boundary. Each row is a point ID. Suppose the boundary has $n$ points, then there are $n$ rows. That is, the beginning point is not repeated at the end. 
->
-><code>fp_final_bdry_vertices_coords_CCW_bi.txt</code>: The boundary point coordinates in counter-clockwise order of the $b_i^{\text{th}}$ boundary. The points have the same ordering and corresponds to the point IDs in <code>fp_final_bdry_vertices_ids_CCW_bi.txt</code>. Each row format is <code>[x y]</code>, the coordinates of the boundary point. Again, the number of rows is $n$, as the beginning point is not repeated at the end. 
 
 Customization
 ---------------
@@ -854,24 +873,6 @@ As shown in the plot, similar to the uniform meshing of sqaure case, we observe 
 
 Code updates
 ================================================
-
-### May 19th, 2024: Delete problematic vertices at termination
-1. At termination, we check for any problematic vertices, defined as: 
-      - Single vertice not incident to any triangles in the mesh. 
-      - Vertices incident to any single triangle not connected to any other triangles. 
-      - Vertices connected to more than two boundary edges. 
-
-      In a while loop, we search and delete these vertices, until no more problematic vertices are left. 
-
-      Therefore, the final mesh may have $\leq$ ``Ntotal`` number of vertices that we specified. This choice is made for better mesh qualities. 
-
-### Oct 19th, 2023: Half-edge data structure; Fixed points input
-
-1. Added in fixed point input for meshing with fixed points.
-
-2. Implemented half-edge structure for final mesh clean up and outputting boundary vertices in counter-clockwise (CCW) order.
-
-3. Triangle vertex ID's are outputted in counter-clockwise (CCW) order at termination.
 
 
 Acknowledgement
