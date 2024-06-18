@@ -331,7 +331,7 @@ where $R_{\text{circum}}$ and $R_{\text{in}}$ are the circumradius and the inrad
 
 ### Output files
 
-The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase <code>ti</code> describe the meshing iteration outputted: <code>fp_ti_=fp_1_</code> is the initial triangulation; <code>fp_10_</code> is the triangulation of the $10^{th}$ iteration. For the last triangulation at termination, the phrase is set to <code>fp_final_</code>.
+The filename prefix is <code>fp="triangle_mesh_N_5000_K_0.1"</code>. The next description phrase <code>ti</code> describe the meshing iteration outputted: <code>fp_ti_=fp_1_</code> is the initial triangulation; <code>fp_10_</code> is the triangulation of the $10^{th}$ iteration. 
 
 The rest of the description phrases in the filenames desribes the data being outputted. Suppose we have $N$ points and $M$ triangles generated. 
 
