@@ -1,6 +1,6 @@
 # Compiler and compilation flags
-cc=gcc-13
-cxx=g++-13
+cc=gcc-14
+cxx=g++-14
 cflags=-Wall -ansi -pedantic -fopenmp -O3 -std=c++11
 
 # MPI compiler
