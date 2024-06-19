@@ -52,6 +52,10 @@ Table of contents
 
 1. [Performance](#performance)
 
+      A. [Square, uniform sizing field](#a-square-uniform-sizing-field)
+
+      B. [Custom poker, adaptive sizing field](#b-custom-poker-adaptive-sizing-field)
+
 1. [Code updates](#code-updates)
 
 1. [Acknowledgement](#acknowledgement)
