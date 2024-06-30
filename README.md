@@ -224,11 +224,42 @@ sprintf(case_name_base,"triangle_mesh_N_%d_K_%g",Ntotal,K);
 mkdir(case_name_base,S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
 ```
 ### Multi-threaded <span style="font-variant:small-caps;">Voro++</span>
+Next, we need to create a ``container_2d`` class object from Multi-threaded <span style="font-variant:small-caps;">Voro++</span>, in order to use it for Delaunay triangulation in the meshing later.
+
 ```c++
 //------------------1.Create container----------------------
 int cnx=sqrt(Ntotal/3.3); int cny=cnx;
 container_2d con(0.0,1.0,0.0,1.0,cnx,cny,false,false,16,num_t);
 ```
+
+> ``ax,bx,ay,by`` (the first four parameters): Computation domain
+
+We first need to define the computation domain, which is a rectangle ``[ax,bx]x[ay,by]``. The computation domain should completely cover and be slightly larger than the mesh. 
+ 
+ For good performance and simplicity, we recommend to construct a **square computation domain**, such that the **mesh lies in the domain center**, and the **maximum dimension of the mesh (i.e. max(length, width)) takes up $80\%$ of the corresponding domain dimension**. For example, if we have a mesh with size $0.6$ by $0.8$, then we can construct a square computation domain with side length $1.0$. In this way, the maximum dimension of the mesh ($0.8$) is $80\%$ of the side length $1$. 
+
+ In the code above, the computation domain is initiated as a sqaure $[0,1]\times[0,1]$. 
+ > ``cnx,cny``: Domain grid dimensions
+
+The computation domain is divided into a grid structure in <span style="font-variant:small-caps;">Voro++</span>. Here, we need to define the number of grid cells in each of the x- and y-dimensions (i.e. number of columns and rows). 
+
+We recommend the above setting, ``int cnx=sqrt(Ntotal/3.3); int cny=cnx;``. Here, since we use a square domain, the grid dimensions can simply be ``cny=cnx``. Furthermore, the calculation of ``cnx`` represents that **approximately $3.3$ points lie in a grid cell, which was found to give optimal computation performance**. 
+
+> periodic in x?
+>
+> periodic in y?
+
+The next two parameters are boolean variables specifying whether the computation domain is periodic in each of the x- and y-dimensions. Here, we simply specify ``false`` for both. 
+
+> memory initialization per grid
+
+Next, we need to specify a number, which initiate memory per grid. $16$ means initiate per grid memory to hold $16$ points. 
+
+> ``num_t``: Number of parallel threads
+
+Last, we need to specify the number of parallel threads to use for parallel computation of the Voronoi diagram in the Delaunay triangulation.
+
+
 
 ### Built-in 2D primitive shapes
 
