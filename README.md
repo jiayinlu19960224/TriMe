@@ -804,7 +804,7 @@ Here, we provide brief summaries of two cases:
 
 - [A. Square, uniform sizing field](#a-square-uniform-sizing-field)
 
-- [B. Square, uniform sizing field](#b-custom-poker-adaptive-sizing-field)
+- [B. Custom poker, adaptive sizing field](#b-custom-poker-adaptive-sizing-field)
 
 A few aspects we test are:
 
