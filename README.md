@@ -121,8 +121,10 @@ Citation and paper
 If you plan to publish an academic paper using this software, please consider citing the following
 publications:
 
-> Lu, Jiayin, Rycroft, Chris. (2023). <span style="font-variant:small-caps;">TriMe++</span>: Multi-threaded triangular meshing in two dimensions
+> Lu, Jiayin , and Rycroft, Chris. (2025). <span style="font-variant:small-caps;">TriMe++</span>: Multi-threaded geometry meshing using
+the Delaunay Triangulation. Computer Physics Communications. 308. 109442 (2025).
 >[[ArXiv]](https://arxiv.org/abs/2309.13824)
+>
 >
 > **Abstract**
 >
