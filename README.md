@@ -3,13 +3,15 @@
 <span style="font-variant:small-caps;">TriMe++</span>: a **multi-threaded** software library for **fast** generation of **large-scale**, **adaptive** 2D triangle meshes for **intricate
 geometric shapes** using Delaunay triangulation.
 
-By Jiayin Lu [^a][^b], Chris H. Rycroft [^b]
+By Jiayin Lu [^a][^b], Chris H. Rycroft [^b][^c]
 
 ![header plot](/docs/github_header_plot.jpg)
 
-[^a]: University of California, Los-Angeles
+[^a]: Department of Mathematics, University of California, Los Angeles, Los Angeles, CA 90095, United States
 
-[^b]: University of Wisconsin-Madison
+[^b]: Department of Mathematics, University of Wisconsin–Madison, Madison, WI 53706, United States
+
+[^c]: Mathematics Group, Lawrence Berkeley Laboratory, Berkeley, CA 94720, United States
 
 Please consider [citing our paper](#citation-and-paper).
 
