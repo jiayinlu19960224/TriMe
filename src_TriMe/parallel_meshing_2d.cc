@@ -564,7 +564,7 @@ void parallel_meshing_2d::add_fixed_points_procedure(){
 
 	//---------------------------------------------------------------------
 	    //update adaptive geometric arrays
-	    double adaptive_scale_fac=1.0/(sqrt(1.0*(Ncurrent/Ncurrent_old)));
+	    double adaptive_scale_fac=1.0/(sqrt(1.0*Ncurrent/Ncurrent_old));
 	    chrtrt_len_h_avg*=adaptive_scale_fac;
 		#pragma omp parallel num_threads(num_t)
 		{
